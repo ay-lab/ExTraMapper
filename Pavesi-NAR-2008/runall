@@ -1,0 +1,129 @@
+#!/bin/bash -ex
+
+# read all the configuration parameters first
+source ../config.conf
+export EXTRAMAPPER_DIR=$EXTRAMAPPERDIR
+step=$1
+
+dataDir=${EXTRAMAPPER_DIR}/preprocess/data
+dataDirPerPair=${EXTRAMAPPER_DIR}/preprocess/data/$org1-$org2
+referenceGenomesDir=$dataDir/reference_genomes
+chainsDir=$dataDir/liftover_chains
+ensemblDir=$dataDirPerPair/ensemblDownloads
+
+# Download source code from article http://www.ncbi.nlm.nih.gov/pubmed/22369432
+if [[ $step -eq 0 ]]; then
+	if [[ ! -e Exalign ]]; then
+		wget http://159.149.160.51/exalign/Download/exalign.tar.gz
+		tar -xzvf exalign.tar.gz
+		rm -rf exalign.tar.gz
+		# fix something small with the source code so that it compiles 
+		echo -ne "//I added the below two includes and it worked -- Ferhat\n" > Exalign/exalign.cpp.temp
+		echo -ne "#include <cstring>\n" >> Exalign/exalign.cpp.temp
+		echo -ne "#include <cstdlib>\n" >> Exalign/exalign.cpp.temp
+		cat Exalign/exalign.cpp >> Exalign/exalign.cpp.temp
+		mv Exalign/exalign.cpp.temp Exalign/exalign.cpp
+		cd Exalign 
+		./compile
+		cd -	
+	fi
+
+
+# Generate files which will be input to Exalign
+elif [[ $step -eq 1 ]]; then
+
+
+	# first parse the transcript information from my GTFsummaries files in the format Exalign wants them
+	if [[ ! -f Exalign/org1.rf ]]; then
+		python ${EXTRAMAPPER_DIR}/Pavesi-NAR-2008/scripts/parseGTFsummariesForExalign.py $dataDirPerPair data
+		for o in 1 2; do
+			outfile=Exalign/org$o.rf
+			echo -ne "#refGene.name\trefGene.chrom\trefGene.strand\trefGene.cdsStart\trefGene.cdsEnd\trefGene.exonCount\trefGene.exonStarts\trefGene.exonEnds\trefGene.name2\trefLink.protAc\n" > $outfile
+			cat data/org$o.rf >> Exalign/org$o.rf
+		done
+		rm -rf data
+	fi
+
+	# make sure the .freq files get generated if they are not already
+	if [[ ! -f Exalign/org1.rf.freq ]]; then
+		cd Exalign
+		./exalign -O org1.rf -freq
+		cd -
+	fi
+	if [[ ! -f Exalign/org2.rf.freq ]]; then
+		cd Exalign
+		./exalign -O org2.rf -freq
+		cd -
+	fi
+
+# Split the previously generated one big transcript file per organism into one file per gene with the desired format
+elif [[ $step -eq 2 ]]; then
+
+	for o in 1 2; do
+		outdir=Exalign/geneByGene/org$o
+		mkdir -p $outdir
+		cat Exalign/org$o.rf | grep ENS | awk '{print > $(NF-1)}' 
+		for f in `ls ENS*`; do
+			echo -ne "#refGene.name\trefGene.chrom\trefGene.strand\trefGene.cdsStart\trefGene.cdsEnd\trefGene.exonCount\trefGene.exonStarts\trefGene.exonEnds\trefGene.name2\trefLink.protAc\n" > $outdir/$f.rf
+			cat $f >> $outdir/$f.rf
+		done
+		rm -rf ENS*
+	done
+
+# for each ortholog gene pair run exalign both ways to find isoform matchings
+elif [[ $step -eq 3 ]]; then
+	pairs=$dataDirPerPair/genePairsSummary-one2one.txt
+#	g++ /home/fao150/proj/2015orthoR01/data/Pavesi-NAR-2008/Exalign/exalign.cpp -o exalignNew -O3
+ 
+	### Do this only for the first ten gene pairs ############################################
+	#for f in `cat $pairs | grep protein_coding | awk '$7==$17 {print $5"-"$15}' | head`; do ##
+	noOfGenePairs=0
+	for f in `cat $pairs | grep protein_coding | awk '$7==$17 {print $5"-"$15}'`; do # for all pairs
+		g1=`echo $f | awk '{split($0,a,"-"); print a[1]}'`
+		g2=`echo $f | awk '{split($0,a,"-"); print a[2]}'`
+		# only run Exalign if both genes happen to have at least one protein_coding transcript
+		if [[ -f Exalign/geneByGene/org1/$g1.rf && -f Exalign/geneByGene/org2/$g2.rf ]]; then
+			rm -rf Exalign/geneByGene/org1/$g1.rf.freq Exalign/geneByGene/org2/$g2.rf.freq
+			ln -s $EXTRAMAPPERDIR/Pavesi-NAR-2008/Exalign/org1.rf.freq Exalign/geneByGene/org1/$g1.rf.freq
+			ln -s $EXTRAMAPPERDIR/Pavesi-NAR-2008/Exalign/org2.rf.freq Exalign/geneByGene/org2/$g2.rf.freq
+
+			cd Exalign
+			./exalign -q geneByGene/org1/$g1.rf -O geneByGene/org2/$g2.rf -t 
+			./exalign -q geneByGene/org2/$g2.rf -O geneByGene/org1/$g1.rf -t 
+			cd - 
+
+			unlink Exalign/geneByGene/org1/$g1.rf.freq
+			unlink Exalign/geneByGene/org2/$g2.rf.freq
+			noOfGenePairs=$(($noOfGenePairs+1))
+		fi
+	done
+	echo "Exalign was successfully run on a total of $noOfGenePairs\n"
+
+# now concat all the individual result files into one big file which may be necessary later
+elif [[ $step -eq 4 ]]; then
+	pairs=$dataDirPerPair/genePairsSummary-one2one.txt
+
+	# get the header lines written first
+	outfile1=Exalign/geneByGene/org1-combined.rf.tab
+	outfile2=Exalign/geneByGene/org2-combined.rf.tab
+	f=`cat $pairs | grep protein_coding | awk '$7==$17 {print $5"-"$15}' | head -1`
+	g1=`echo $f | awk '{split($0,a,"-"); print a[1]}'`
+	g2=`echo $f | awk '{split($0,a,"-"); print a[2]}'`
+	cat Exalign/geneByGene/org1/$g1.rf.tab | grep -v ENST > $outfile1
+	cat Exalign/geneByGene/org2/$g2.rf.tab | grep -v ENST > $outfile2
+
+	# now concat all non-header lines
+	for f in `cat $pairs | grep protein_coding | awk '$7==$17 {print $5"-"$15}'`; do
+		g1=`echo $f | awk '{split($0,a,"-"); print a[1]}'`
+		g2=`echo $f | awk '{split($0,a,"-"); print a[2]}'`
+		# only run Exalign if both genes happen to have at least one protein_coding transcript
+		if [[ -f Exalign/geneByGene/org1/$g1.rf && -f Exalign/geneByGene/org2/$g2.rf ]]; then
+			
+			cat Exalign/geneByGene/org1/$g1.rf.tab | grep ENST >> $outfile1
+			cat Exalign/geneByGene/org2/$g2.rf.tab | grep ENST >> $outfile2
+		fi
+	done
+fi
+
+exit
+

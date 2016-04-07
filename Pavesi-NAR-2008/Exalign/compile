@@ -1,0 +1,7 @@
+#!/bin/sh
+
+CC="g++"
+
+echo $CC exalign.cpp -o exalign -O3 
+$CC exalign.cpp -o exalign -O3 
+
