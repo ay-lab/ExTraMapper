@@ -28,7 +28,6 @@ if [[ $step -eq 0 ]]; then
 		cd -	
 	fi
 
-
 # Generate files which will be input to Exalign
 elif [[ $step -eq 1 ]]; then
 
