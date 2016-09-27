@@ -1,4 +1,4 @@
-This entry describes how we downloaded and processed data from:
+This entry describes how we downloaded and processed data from (Exalign):
 
 Pavesi, G., Zambelli, F., Caggese, C. and Pesole, G. (2008) Exalign: a new
 method for comparative analysis of exon-intron gene structures. Nucleic acids
