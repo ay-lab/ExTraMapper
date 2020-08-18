@@ -37,27 +37,4 @@ genePairId=ENSG00000124299-ENSMUSG00000063931
 genePairId=ENSG00000063127-ENSMUSG00000070568
 
 MAPPED_EXON_THRES=0.9
-python ${EXTRAMAPPER_DIR}/scripts/ExTraMapper.py ${MAPPED_EXON_THRES} $org1 $org2 $genePairId
-exit
-
-
-MAPPED_EXON_THRES=0.8
-for s in `seq 0 1000 15000`; do
-	startIndex=$s
-	endIndex=$(($s+1000))
-	export MAPPED_EXON_THRES=${MAPPED_EXON_THRES}
-	export STARTINDEX=$startIndex
-	export ENDINDEX=$endIndex
-
-	qsub cluster.job
-
-done
-
-exit
-
-MAPPED_EXON_THRES=0.9
-python ${EXTRAMAPPER_DIR}/scripts/ExTraMapper.py ${MAPPED_EXON_THRES} $org1 $org2 $genePairId
-
-exit
-python ${EXTRAMAPPER_DIR}/scripts/ExTraMapper.py ${MAPPED_EXON_THRES} $org1 $org2 all >> allOutputs-Apr11.out
-
+python ${EXTRAMAPPER_DIR}/scripts/ExTraMapper.py ${MAPPED_EXON_THRES} $org1 $org2 $genePairId > allOutputs.txt
