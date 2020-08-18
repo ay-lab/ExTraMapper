@@ -6,6 +6,7 @@ ExTraMapper is a tool to find Exon and Transcript-level Mappings of a given pair
 # Run ExtraMapper
 ### Read all the configuration parameters first
 source config.conf
+
 export EXTRAMAPPER_DIR=$EXTRAMAPPERDIR
 
 ### Set the liftover minimum match threshold
