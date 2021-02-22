@@ -99,17 +99,17 @@ elif [[ $step -eq 1 ]]; then
 	#done
 	######################################################################################################
 	
-	i=1
-	for ref in $ref1 $ref2; do
-		wigsDir=$phastConsDir/$ref-mafFiles/SCORES
-		genomedata-open-data org$i --tracknames phastCons
-		for f in `ls $wigsDir/*.wig.gz`; do
-			#echo $f
-			zcat $f | genomedata-load-data org$i phastCons
-		done
-		genomedata-close-data org$i
-		i=$(($i+1))
-	done
+	#i=1
+	#for ref in $ref1 $ref2; do
+	#	wigsDir=$phastConsDir/$ref-mafFiles/SCORES
+	#	genomedata-open-data org$i --tracknames phastCons
+	#	for f in `ls $wigsDir/*.wig.gz`; do
+	#		#echo $f
+	#		zcat $f | genomedata-load-data org$i phastCons
+	#	done
+	#	genomedata-close-data org$i
+	#	i=$(($i+1))
+	#done
 	cd -
 
 # OPTIONAL step 2.1 (21 as int)
