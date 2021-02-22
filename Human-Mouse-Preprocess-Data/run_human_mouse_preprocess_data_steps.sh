@@ -116,29 +116,29 @@ elif [[ $step -eq 1 ]]; then
 # Extract sequences of each exon as a fasta entry using genomedata archive
 # Use whether the splice site signature is there to make sure coordinates are
 # retrieved correctly for the fasta files
-elif [[ $step -eq 21 ]]; then
-	
-	##########################################################################################
-	##### if weblogo package is not installed please do so using below commands ##############
-	##### for more info on weblogo: http://weblogo.berkeley.edu/ #############################
-	#wget http://weblogo.berkeley.edu/release/weblogo.2.8.2.tar.gz
-	#tar -xzvf weblogo.2.8.2.tar.gz; rm -rf weblogo.2.8.2.tar.gz
-	##########################################################################################
-
-	seqlogobin=${EXTRAMAPPER_DIR}/preprocess/weblogo/seqlogo
-
-	outdir=${EXTRAMAPPER_DIR}/preprocess/output/seqLogos
-	python ${EXTRAMAPPER_DIR}/scripts/extractFastaSeqsForExons.py $dataDirPerPair $outdir
-
-	$seqlogobin -F PDF -f <(cat $outdir/org1_exonIntron_10-5p_10-3p.fasta | awk '{l1=$0; getline; printf("%s\t%s\n",l1,$0)}' \
-		| grep plusStrand |  awk '{print $1; print $2}')  -a -b -c -n -Y -E > $outdir/org1_exonIntron_10-5p_10-3p-onlyPlusStrand.pdf
-
-	$seqlogobin -F PDF -f <(cat $outdir/org1_exonIntron_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org1_exonIntron_10-5p_10-3p-all.pdf
-	$seqlogobin -F PDF -f <(cat $outdir/org1_intronExon_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org1_intronExon_10-5p_10-3p-all.pdf
-
-	$seqlogobin -F PDF -f <(cat $outdir/org2_exonIntron_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org2_exonIntron_10-5p_10-3p-all.pdf
-	$seqlogobin -F PDF -f <(cat $outdir/org2_intronExon_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org2_intronExon_10-5p_10-3p-all.pdf
-
+#elif [[ $step -eq 21 ]]; then
+#	
+#	##########################################################################################
+#	##### if weblogo package is not installed please do so using below commands ##############
+#	##### for more info on weblogo: http://weblogo.berkeley.edu/ #############################
+#	#wget http://weblogo.berkeley.edu/release/weblogo.2.8.2.tar.gz
+#	#tar -xzvf weblogo.2.8.2.tar.gz; rm -rf weblogo.2.8.2.tar.gz
+#	##########################################################################################
+#
+#	seqlogobin=${EXTRAMAPPER_DIR}/preprocess/weblogo/seqlogo
+#
+#	outdir=${EXTRAMAPPER_DIR}/preprocess/output/seqLogos
+#	python ${EXTRAMAPPER_DIR}/scripts/extractFastaSeqsForExons.py $dataDirPerPair $outdir
+#
+#	$seqlogobin -F PDF -f <(cat $outdir/org1_exonIntron_10-5p_10-3p.fasta | awk '{l1=$0; getline; printf("%s\t%s\n",l1,$0)}' \
+#		| grep plusStrand |  awk '{print $1; print $2}')  -a -b -c -n -Y -E > $outdir/org1_exonIntron_10-5p_10-3p-onlyPlusStrand.pdf
+#
+#	$seqlogobin -F PDF -f <(cat $outdir/org1_exonIntron_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org1_exonIntron_10-5p_10-3p-all.pdf
+#	$seqlogobin -F PDF -f <(cat $outdir/org1_intronExon_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org1_intronExon_10-5p_10-3p-all.pdf
+#
+#	$seqlogobin -F PDF -f <(cat $outdir/org2_exonIntron_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org2_exonIntron_10-5p_10-3p-all.pdf
+#	$seqlogobin -F PDF -f <(cat $outdir/org2_intronExon_10-5p_10-3p.fasta)  -a -b -c -n -Y -E > $outdir/org2_intronExon_10-5p_10-3p-all.pdf
+#
 # extract conservation scores and acceptor-donor sites for each exon
 elif [[ $step -eq 2 ]]; then
 
