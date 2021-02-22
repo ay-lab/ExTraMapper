@@ -10,7 +10,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
 
 
 ### Step 2: Set the following path
-export EXTRAMAPPER_DIR=/path/to/this/folder
+```bash export EXTRAMAPPER_DIR=/path/to/this/folder```
 
 ### Set the liftover minimum match threshold
 MAPPED_EXON_THRES=1.0
