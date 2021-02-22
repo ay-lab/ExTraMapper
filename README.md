@@ -8,7 +8,9 @@ ExTraMapper is a tool to find Exon and Transcript-level Mappings of a given pair
 ### Step 1: Prepare the input files
 ExTraMapper requires a set of preprocessed files to find the conservation scores. Examples to create these files are provided within __Human-Mouse-Preprocess-Data__ and __Human-Mokey-Preprocessed-Data__ folders. Users should look into these folders and follow the instructions to create the required input files before going to the next step.   
 
-export EXTRAMAPPER_DIR=$EXTRAMAPPERDIR
+
+### Step 2: Set the following path
+export EXTRAMAPPER_DIR=/path/to/this/folder
 
 ### Set the liftover minimum match threshold
 MAPPED_EXON_THRES=1.0
