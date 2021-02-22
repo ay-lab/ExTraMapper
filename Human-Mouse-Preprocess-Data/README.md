@@ -4,8 +4,22 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
 This will fetch organism specific chromosomal fasta, gtf and liftOver files. 
 $ ./run_human_mouse_preprocess_data_steps.sh 0
 
+
 The next step will create the genomedata object files. This step requires genomedata package
 which can be installed by running the following commnand and followed by the step 1 commnad.
 $ pip install genomedata --user
 $ ./run_human_mouse_preprocess_data_steps.sh 1
 
+
+Step2 will create pickle files and gene summaries
+$ ./run_human_mouse_preprocess_data_steps.sh 2
+
+
+Step3 will run the liftOver with multiple mappings and also compute intersections with the other set of exons
+$ ./run_human_mouse_preprocess_data_steps.sh 3
+
+
+Step 4 to 6 will generate the input files
+$ ./run_human_mouse_preprocess_data_steps.sh 4
+$ ./run_human_mouse_preprocess_data_steps.sh 5
+$ ./run_human_mouse_preprocess_data_steps.sh 6
