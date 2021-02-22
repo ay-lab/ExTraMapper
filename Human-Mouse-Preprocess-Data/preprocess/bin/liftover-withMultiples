@@ -1,0 +1,171 @@
+#!/bin/bash -ex
+set -o pipefail
+set -o errexit 
+
+source config.conf
+
+
+dataDir=${EXTRAMAPPER_DIR}/preprocess/data
+dataDirPerPair=${EXTRAMAPPER_DIR}/preprocess/data/$org1-$org2
+
+chainsDir=$dataDir/liftover_chains
+ensemblDir=$dataDirPerPair/ensemblDownloads
+
+liftOverFilesDir=$dataDirPerPair/liftoverRelatedFiles
+perExonLiftoverDir=$dataDirPerPair/perExonLiftoverCoords
+
+outdir=$liftOverFilesDir
+flank=$1
+minMatch=$2
+
+chain1to2=$3
+chain2to1=$4 
+
+mkdir -p $ensemblDir
+
+GTFfile1=$ensemblDir/org1.gtf.gz
+GTFfile2=$ensemblDir/org2.gtf.gz
+org1to2homologFile=$ensemblDir/org1_homolog_org2.txt.gz
+org2to1homologFile=$ensemblDir/org2_homolog_org1.txt.gz
+refGDdir1=$ensemblDir/org1 # genomedata archive for org1
+refGDdir2=$ensemblDir/org2 # genomedata archive for org2
+
+	##########################  need to add 1 to liftedOver coordinates to match UCSC coordinates ###################
+	############## HOWEVER, this is only correct if original/lifted strands are same -/- or +/+   ####################
+	############## THEREFORE, I account manually for this by checking the strand pairs  	      ####################
+
+	############## ALSO, liftOver does not CHANGE the strand of original coordinates when used ######################
+	#############  without the -multiple option and it DOES with -multiple. 		#########################
+	############ HENCE, I handle these two cases differently.				########################
+
+## OLDER AND INCORRECT WAY #1	###########################################################################################################
+#			zcat $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed.gz | awk '{print $1"\t"$2+1"\t"$3+1"\t"$4"\t"$5}' \
+#				> $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp 
+#			
+#			zcat $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed.gz | awk '{print $1"\t"$2+1"\t"$3+1"\t"$4"\t"$5}' \
+#				> $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp 
+#
+#rm -rf $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp
+###############################################################################################################################################
+
+
+#
+	# first work on the partCoding exons
+	suffix=flank$flank-minMatch$minMatch-multiples-partCoding
+
+	# fourth fields stays the same, fifth is replaced by multiplicity, sixth will be the new strand after liftover
+	${EXTRAMAPPER_DIR}/preprocess/bin/liftOver <(cat $outdir/org1_partCodingExonsList.bed | awk '{print $1,$2-s,$3+s,$5,$4,$4}' s=$flank) \
+		$chain1to2 org2_mapped-$suffix.bed org2_unmapped-$suffix.bed -minMatch=$minMatch -multiple
+
+	${EXTRAMAPPER_DIR}/preprocess/bin/liftOver <(cat $outdir/org2_partCodingExonsList.bed | awk '{print $1,$2-s,$3+s,$5,$4,$4}' s=$flank) \
+		$chain2to1 org1_mapped-$suffix.bed org1_unmapped-$suffix.bed -minMatch=$minMatch -multiple
+
+	# chr, start, end, exonId, Multiplicity, strand (after conversion)
+	cat org1_mapped-$suffix.bed | sort -k1,1 -k2,2n > $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed
+	cat org2_mapped-$suffix.bed | sort -k1,1 -k2,2n > $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed
+	
+	# chr, start, end, exonId, Why unmapped, strand (before conversion)
+	cat org1_unmapped-$suffix.bed | awk '{l1=$1; getline; printf("%s\t%s\t%s\t%s\t%s\t%s\n",$1,$2,$3,$4,l1,$5)}' |\
+		 sort -k1,1 -k2,2n > $outdir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed
+	cat org2_unmapped-$suffix.bed | awk '{l1=$1; getline; printf("%s\t%s\t%s\t%s\t%s\t%s\n",$1,$2,$3,$4,l1,$5)}' |\
+		 sort -k1,1 -k2,2n > $outdir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed
+
+	rm -rf org1_mapped-$suffix.bed org2_mapped-$suffix.bed org1_unmapped-$suffix.bed org2_unmapped-$suffix.bed
+
+	# take the intersections
+	## NEW AND CORRECT WAY - FOR ONLY liftOver with -multiple OPTION  ###########################################################################
+	cat $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed | awk '{print $4,$0}' | sort -k1,1 > mapped.temp
+	join $outdir/org2_partCodingExonsList.sorted.temp mapped.temp | \
+		awk '{s=$8; e=$9; if ($5!=$12) {s=s+1; e=e+1;}; print $7"\t"s"\t"e"\t"$10"\t"$11"\t"$12}' \
+		| sort -k1,1 -k2,2n > $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp
+	bedtools intersect -a $outdir/org1_allCodingExonsList.bed \
+		-b $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp -sorted -wao \
+		> $outdir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed
+
+	bedtools intersect -b $outdir/org1_allCodingExonsList.bed \
+		-a $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp -sorted -v \
+		> $outdir/org1_VS_org2_to_org1_nonintersectingExonsList-$suffix.bed
+
+	cat $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed | awk '{print $4,$0}' | sort -k1,1 > mapped.temp
+	join $outdir/org1_partCodingExonsList.sorted.temp mapped.temp | \
+		awk '{s=$8; e=$9; if ($5!=$12) {s=s+1; e=e+1;}; print $7"\t"s"\t"e"\t"$10"\t"$11"\t"$12}' \
+		| sort -k1,1 -k2,2n > $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp
+
+	bedtools intersect -a $outdir/org2_allCodingExonsList.bed \
+		-b $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp -sorted -wao \
+		> $outdir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed
+
+	bedtools intersect -b $outdir/org2_allCodingExonsList.bed \
+		-a $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp -sorted -v \
+		> $outdir/org2_VS_org1_to_org2_nonintersectingExonsList-$suffix.bed
+	###############################################################################################################################################
+
+	rm -rf $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp mapped.temp
+
+	gzip $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed
+	gzip $outdir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed $outdir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed
+	gzip $outdir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed $outdir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed
+	gzip $outdir/org2_VS_org1_to_org2_nonintersectingExonsList-$suffix.bed $outdir/org1_VS_org2_to_org1_nonintersectingExonsList-$suffix.bed
+
+#
+	# now work on all exons including the partCoding, nonCoding and fullCoding ones
+
+	suffix=flank$flank-minMatch$minMatch-multiples
+
+	# fourth fields stays the same, fifth is replaced by multiplicity, sixth will be the new strand after liftover
+	#liftOver <(cat $outdir/org1_allExonsList.bed | awk '{if ($4=="+") print $1,$2-s,$3+s,$5,$4,$4; else print $1,$2-s,$3+s,$5,$4,$4;}' s=$flank) \
+	${EXTRAMAPPER_DIR}/preprocess/bin/liftOver <(cat $outdir/org1_allExonsList.bed | awk '{print $1,$2-s,$3+s,$5,$4,$4}' s=$flank) \
+		$chain1to2 org2_mapped-$suffix.bed org2_unmapped-$suffix.bed -minMatch=$minMatch -multiple
+
+	${EXTRAMAPPER_DIR}/preprocess/bin/liftOver <(cat $outdir/org2_allExonsList.bed | awk '{print $1,$2-s,$3+s,$5,$4,$4}' s=$flank) \
+		$chain2to1 org1_mapped-$suffix.bed org1_unmapped-$suffix.bed -minMatch=$minMatch -multiple
+
+	cat org1_mapped-$suffix.bed | sort -k1,1 -k2,2n > $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed
+	cat org2_mapped-$suffix.bed | sort -k1,1 -k2,2n > $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed
+	#cat org1_unmapped-$suffix.bed | awk 'NR%2==1' | sort | uniq - 
+	#cat org2_unmapped-$suffix.bed | awk 'NR%2==1' | sort | uniq - 
+	
+	cat org1_unmapped-$suffix.bed | awk '{l1=$1; getline; printf("%s\t%s\t%s\t%s\t%s\t%s\n",$1,$2,$3,$4,l1,$5)}' |\
+		 sort -k1,1 -k2,2n > $outdir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed
+	cat org2_unmapped-$suffix.bed | awk '{l1=$1; getline; printf("%s\t%s\t%s\t%s\t%s\t%s\n",$1,$2,$3,$4,l1,$5)}' |\
+		 sort -k1,1 -k2,2n > $outdir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed
+	
+	rm -rf org1_mapped-$suffix.bed org2_mapped-$suffix.bed org1_unmapped-$suffix.bed org2_unmapped-$suffix.bed
+
+	# take the intersections
+	## NEW AND CORRECT WAY - FOR ONLY liftOver with -multiple OPTION  ###########################################################################
+	# This correction in coordinates leads to some exons with that doesn't have any file mapped, unmapped, nonintersecting. ##
+	# There is only 2 such exons and they be deemed unmapped (i.e., deleted from the second organism) #
+	cat $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed | awk '{print $4,$0}' | sort -k1,1 > mapped.temp
+	join $outdir/org2_allExonsList.sorted.temp mapped.temp | \
+		awk '{s=$8; e=$9; if ($5!=$12) {s=s+1; e=e+1;}; print $7"\t"s"\t"e"\t"$10"\t"$11"\t"$12}' \
+		| sort -k1,1 -k2,2n > $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp
+	bedtools intersect -a $outdir/org1_allExonsList.bed \
+		-b $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp -sorted -wao \
+		> $outdir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed
+	bedtools intersect -b $outdir/org1_allExonsList.bed \
+		-a $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp -sorted -v \
+		> $outdir/org1_VS_org2_to_org1_nonintersectingExonsList-$suffix.bed
+
+	cat $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed | awk '{print $4,$0}' | sort -k1,1 > mapped.temp
+	join $outdir/org1_allExonsList.sorted.temp mapped.temp | \
+		awk '{s=$8; e=$9; if ($5!=$12) {s=s+1; e=e+1;}; print $7"\t"s"\t"e"\t"$10"\t"$11"\t"$12}' \
+		| sort -k1,1 -k2,2n > $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp
+
+	bedtools intersect -a $outdir/org2_allExonsList.bed \
+		-b $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp -sorted -wao \
+		> $outdir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed
+
+	bedtools intersect -b $outdir/org2_allExonsList.bed \
+		-a $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp -sorted -v \
+		> $outdir/org2_VS_org1_to_org2_nonintersectingExonsList-$suffix.bed
+
+	rm -rf $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.temp $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.temp mapped.temp
+
+	gzip $outdir/org2_to_org1_liftOver_mappedExonsList-$suffix.bed $outdir/org1_to_org2_liftOver_mappedExonsList-$suffix.bed
+	gzip $outdir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed $outdir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed
+	gzip $outdir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed $outdir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed
+	gzip $outdir/org2_VS_org1_to_org2_nonintersectingExonsList-$suffix.bed $outdir/org1_VS_org2_to_org1_nonintersectingExonsList-$suffix.bed
+
+	###############################################################################################################################################
+
