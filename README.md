@@ -12,13 +12,17 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
 ### Step 2: Set the following path
 ```bash export EXTRAMAPPER_DIR=/path/to/this/folder```
 
-### Set the liftover minimum match threshold
-MAPPED_EXON_THRES=1.0
+### Step 3: Run ExTraMapper individually
+```bash
+python ExTraMapper.py -h
+usage: ExTraMapper.py [-h] -m MAPPING -o1 ORG1 -o2 ORG2 -p ORTHOLOG
 
-### An example input gene pair (BRAF)
-genePairId="ENSG00000157764-ENSMUSG00000002413"
+Check the help flag
 
-### Run ExTramapper (Requires python 2.7)
-python $EXTRAMAPPER_DIR/scripts/ExTraMapper.py $MAPPED_EXON_THRES $org1 $org2 $genePairId > Outputs.txt
-
-### Check the run-ExTraMapper.sh for more details
+optional arguments:
+  -h, --help   show this help message and exit
+  -m MAPPING   ExTraMapper Exon threshold value [e.g. 1]
+  -o1 ORG1     First organism name [e.g. human]
+  -o2 ORG2     Second organism name [e.g. mouse]
+  -p ORTHOLOG  Orthologous gene pair [e.g. ENSG00000141510-ENSMUSG00000059552 OR all]
+```
