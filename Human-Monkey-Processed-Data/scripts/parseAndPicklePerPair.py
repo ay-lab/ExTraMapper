@@ -14,8 +14,7 @@ import gzip
 import _pickle as pickle
 
 # reads from exported environment variable
-#ExTraMapperPath=os.environ['EXTRAMAPPER_DIR']
-ExTraMapperPath='/home/abhijit/overflow/proj_overflow/ExtraMapper/Python3_Version/monkey_human_data'
+ExTraMapperPath=os.environ['EXTRAMAPPER_DIR']
 sys.path.append(ExTraMapperPath+"/scripts")
 from ensemblUtils import *
 
