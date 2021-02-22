@@ -9,9 +9,10 @@ $ ./run_human_mouse_preprocess_data_steps.sh 0
 
 
 The above step may produce an error while downloading the monkey genome from UCSC. 
-In that case, please do the following 
-$ 
-
+In that case, please do the following and the script will produce the required fasta files.
+$ cd ./preprocess/data/reference_genomes/rheMac10/
+$ perl getFasta.pl
+$ cd -
 
 The next step will create the genomedata object files. This step requires genomedata package
 which can be installed by running the following commnand and followed by the step 1 commnad.
