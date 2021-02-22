@@ -27,4 +27,5 @@ $ ./run_human_mouse_preprocess_data_steps.sh 4
 $ ./run_human_mouse_preprocess_data_steps.sh 5
 $ ./run_human_mouse_preprocess_data_steps.sh 6
 ```
-#### The whole process should take some time to finish!
+##### The whole process should take some time to finish!
+##### (Check also the Human-Moneky data processing steps)
