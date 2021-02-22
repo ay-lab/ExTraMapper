@@ -15,7 +15,6 @@ import _pickle as pickle
 
 # reads from exported environment variable
 ExTraMapperPath=os.environ['EXTRAMAPPER_DIR']
-#ExTraMapperPath='/home/abhijit/overflow/proj_overflow/ExtraMapper/Python3_Version/automated_data_download'
 sys.path.append(ExTraMapperPath+"/scripts")
 from ensemblUtils import *
 
