@@ -25,12 +25,12 @@ perExonLiftoverDir=$dataDirPerPair/perExonLiftoverCoords
 if [[ $step -eq 0 ]]; then
 # download "per organism" specific files and keep the original organism names for future reuse
 	## download the two reference genomes from UCSC and get rid of unknown, random and alt contigs
-	#for ref in $ref1 $ref2; do
-	#	mkdir -p $referenceGenomesDir/$ref
-	#	wget --timestamping ftp://hgdownload.cse.ucsc.edu/goldenPath/$ref/chromosomes/* --directory-prefix=$referenceGenomesDir/$ref
-	#	rm -rf $referenceGenomesDir/$ref/chrUn* $referenceGenomesDir/$ref/*random* $referenceGenomesDir/$ref/*_alt*
-	#	echo "Reference genome $ref downloaded to: $referenceGenomesDir/$ref"
-	#done
+	for ref in $ref1 $ref2; do
+		mkdir -p $referenceGenomesDir/$ref
+		wget --timestamping ftp://hgdownload.cse.ucsc.edu/goldenPath/$ref/chromosomes/* --directory-prefix=$referenceGenomesDir/$ref
+		rm -rf $referenceGenomesDir/$ref/chrUn* $referenceGenomesDir/$ref/*random* $referenceGenomesDir/$ref/*_alt*
+		echo "Reference genome $ref downloaded to: $referenceGenomesDir/$ref"
+	done
 
 	# download liftover chains for each genome
 	mkdir -p $chainsDir/$ref1/liftOver/ $chainsDir/$ref2/liftOver/
