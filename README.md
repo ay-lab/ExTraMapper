@@ -14,7 +14,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
 
 ### Step 3: Run ExTraMapper individually
 ```bash
-python ExTraMapper.py -h
+$ python ExTraMapper.py -h
 usage: ExTraMapper.py [-h] -m MAPPING -o1 ORG1 -o2 ORG2 -p ORTHOLOG
 
 Check the help flag
@@ -25,4 +25,12 @@ optional arguments:
   -o1 ORG1     First organism name [e.g. human]
   -o2 ORG2     Second organism name [e.g. mouse]
   -p ORTHOLOG  Orthologous gene pair [e.g. ENSG00000141510-ENSMUSG00000059552 OR all]
+```
+
+# OR
+
+### Step 3: Run ExTraMapper for all the gene pairs
+```bash
+$ python ExTraMapper.py -h
+usage: ExTraMapper.py [-h] -m MAPPING -o1 ORG1 -o2 ORG2 -p all
 ```
