@@ -36,7 +36,8 @@ usage: ExTraMapper.py [-h] -m MAPPING -o1 ORG1 -o2 ORG2 -p all
 ```
 
 ### Refer the work
-[_ExTraMapper: Exon- and Transcript-level mappings for orthologous gene pairs_](https://www.biorxiv.org/content/10.1101/277723v1)
+[_ExTraMapper: Exon- and Transcript-level mappings for orthologous gene pairs._](https://www.biorxiv.org/content/10.1101/277723v1)
+
 The data shown in the above paper was performed using Human & Mouse ENSMBL release 81 with python 2.7 code. 
 The current update is with ENSMBL release 102 and python 3 or later version. To see the older code and data please
 change the __Branch__ to __ExTraMapper-python2v__ from __master__
