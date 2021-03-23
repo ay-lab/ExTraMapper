@@ -43,5 +43,33 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
     $ ./run_human_mouse_preprocess_data_steps.sh 6
     ```
     <br>
+
+#### Once finished the run_human_mouse_preprocess_data_steps.sh script shoudld produce the _data_ folder with the following subfolders.   
+
+```bash 
+.
+|-- bin
+|   |-- liftOver
+|   `-- liftover-withMultiples
+|-- data
+|   |-- human-mouse
+|   |   |-- GTFsummaries
+|   |   |-- ensemblDownloads
+|   |   |-- genePairsSummary-one2one.txt
+|   |   |-- genomedataArchives
+|   |   |-- liftoverRelatedFiles
+|   |   |-- perExonLiftoverCoords
+|   |   |-- perGenePairPickledInfo
+|   |   `-- phastConsScores
+|   |-- liftover_chains
+|   |   |-- hg38
+|   |   `-- mm10
+|   `-- reference_genomes
+|       |-- hg38
+|       `-- mm10
+`-- scripts
+    `-- splitExonsIntoIndividualFiles.py
+```
+<br>
 ##### The whole process should take some time to finish!
 ##### (Check also the Human-Moneky data processing steps)
