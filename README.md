@@ -231,6 +231,8 @@ $ tree ./output
         `-- transcriptLevelSimilarities-1.0.txt
 ```
 
+(Note: The exonLevelMappings-1.0.txt & transcriptLevelMappings-1.0.txt file contains the mapped exon and transcript pair from ENSG00000141510-ENSMUSG00000059552 orthologous gene-pair)
+
 # OR
 
 ### Step 3: Run ExTraMapper for all the gene pairs
