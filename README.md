@@ -214,6 +214,21 @@ Writing UCSC browser bed output for org2 into file:
 
 ........
 ExTraMapper ran successfully for 1 gene pairs between: human and mouse
+
+
+*****************************************************************
+$ tree ./output
+
+./output
+`-- human-mouse
+    `-- ENSG00000141510-ENSMUSG00000059552
+        |-- exonClasses-1.0.txt
+        |-- exonLevelMappings-1.0.txt
+        |-- exonLevelSimilarities-1.0.txt
+        |-- org1-ucsc-1.0.bed
+        |-- org2-ucsc-1.0.bed
+        |-- transcriptLevelMappings-1.0.txt
+        `-- transcriptLevelSimilarities-1.0.txt
 ```
 
 # OR
