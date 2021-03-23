@@ -4,7 +4,10 @@ ExTraMapper is a tool to find Exon and Transcript-level Mappings of a given pair
 
 ![ExTraMapper_Figure](https://user-images.githubusercontent.com/18036388/90572310-8b693e00-e168-11ea-9fbc-8188c2834de9.jpg)
 
-# Steps to run ExtraMapper (For python version 3 or later usage)
+# Steps to run ExtraMapper 
+
+## (For python version 3 or later usage)
+
 ### Step 1: Prepare the input files
 ExTraMapper requires a set of preprocessed files to find the conservation scores. Examples to create these files are provided within the following folders
 1. [__Human-Mouse-Preprocess-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Mouse-Preprocess-Data) 
