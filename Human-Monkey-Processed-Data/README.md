@@ -84,3 +84,6 @@ The users should run the _run_human_monkey_preprocess_data_steps.sh_ to generate
 `-- scripts
     `-- splitExonsIntoIndividualFiles.py
 ```
+
+##### The whole process should take some time to finish!
+##### [(Check also the Human-Mouse data processing steps)](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Mouse-Processe-Data)
