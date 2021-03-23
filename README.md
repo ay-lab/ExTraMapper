@@ -126,6 +126,7 @@ Users should look into these folders and follow the instructions to create the r
 
 ### Step 2: Set the following path
 ```bash export EXTRAMAPPER_DIR=/path/to/this/folder```
+
 <br>
 
 ### Step 3: Run ExTraMapper individually
