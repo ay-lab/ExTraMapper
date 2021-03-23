@@ -231,7 +231,7 @@ $ tree ./output
         `-- transcriptLevelSimilarities-1.0.txt
 ```
 
-Note: The __exonLevelMappings-1.0.txt__ & __transcriptLevelMappings-1.0.txt__ file contains the mapped exon and transcript pairs from __ENSG00000141510-ENSMUSG00000059552__ orthologous gene-pair
+Note: The __exonLevelMappings-1.0.txt__ & __transcriptLevelMappings-1.0.txt__ file contains the mapped exon and transcript pairs from __ENSG00000141510-ENSMUSG00000059552__ orthologous gene-pair. Check the [Result/Exon-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Exon-Pairs) and [Result/Transcript-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Transcript-Pairs) to download the precomputed ExTraMapper result for human-mouse and human-monkey orthologous exon and transcript pairs.
 
 <br>
 
