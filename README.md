@@ -233,6 +233,8 @@ $ tree ./output
 
 Note: The __exonLevelMappings-1.0.txt__ & __transcriptLevelMappings-1.0.txt__ file contains the mapped exon and transcript pairs from __ENSG00000141510-ENSMUSG00000059552__ orthologous gene-pair
 
+<br>
+
 # OR
 
 ### Step 3: Run ExTraMapper for all the gene pairs
