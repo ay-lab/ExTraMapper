@@ -230,8 +230,9 @@ $ tree ./output
         |-- transcriptLevelMappings-1.0.txt
         `-- transcriptLevelSimilarities-1.0.txt
 ```
+<br>
 
-(Note: The exonLevelMappings-1.0.txt & transcriptLevelMappings-1.0.txt file contains the mapped exon and transcript pair from ENSG00000141510-ENSMUSG00000059552 orthologous gene-pair)
+##### (Note: The _exonLevelMappings-1.0.txt_ & _transcriptLevelMappings-1.0.txt_ file contains the mapped exon and transcript pairs from ENSG00000141510-ENSMUSG00000059552 orthologous gene-pair)
 
 # OR
 
