@@ -144,7 +144,7 @@ optional arguments:
   -p ORTHOLOG  Orthologous gene pair [e.g. ENSG00000141510-ENSMUSG00000059552 OR all]
 ```
 
-#### Example run 
+#### Example run of ExTraMapper.py using orthologous gene pair ENSG00000141510-ENSMUSG00000059552 
 ```bash
 $ python ExTraMapper.py -m 1 -o1 human -o2 mouse -p ENSG00000141510-ENSMUSG00000059552
 
