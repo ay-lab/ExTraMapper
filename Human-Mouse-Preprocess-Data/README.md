@@ -1,5 +1,5 @@
 ## Steps to generate the input files
-The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate the inputfiles. All the input files will be generated under _preprocess/data_ folder. The _run_human_mouse_preprocess_data_steps.sh_ has six individual steps and should be run in the following manner 
+The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate the inputfiles. All the input files will be generated under _preprocess/data_ folder. All the required executables and scripts are provided in the same folder. The _run_human_mouse_preprocess_data_steps.sh_ has six individual steps and should be run in the following manner 
 
 ### Run the following steps 
 
