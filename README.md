@@ -12,6 +12,46 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     
     Quick look
    
+   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Set the following path <br><br>
+   
+    ```bash
+    export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
+    cd $EXTRAMAPPER_DIR
+    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. <br><br>
+   
+    ```batch
+    $ ./run_human_mouse_preprocess_data_steps.sh 0
+    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand. <br><br>
+    
+    ```bash
+    $ pip install genomedata --user
+    $ ./run_human_mouse_preprocess_data_steps.sh 1
+    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library. <br><br>
+    
+    ```bash
+    $ ./run_human_mouse_preprocess_data_steps.sh 2
+    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings. <br><br>
+    
+    ```bash
+    $ ./run_human_mouse_preprocess_data_steps.sh 3
+    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files. <br><br>
+    
+    ```bash
+    $ ./run_human_mouse_preprocess_data_steps.sh 4
+    $ ./run_human_mouse_preprocess_data_steps.sh 5
+    $ ./run_human_mouse_preprocess_data_steps.sh 6
+    ```
+    
     and 
     
 3. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
@@ -21,7 +61,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Set the following path <br><br>
    
     ```bash
-    export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
+    export EXTRAMAPPER_DIR=/path/to/Human-Monkey-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
     ```
    
