@@ -69,7 +69,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. <br><br>
    
     ```batch
-    $ ./run_human_mouse_preprocess_data_steps.sh 0
+    $ ./run_human_monkey_preprocess_data_steps.sh 0
     ```
     
     - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The above step may produce an error while downloading the monkey genome from UCSC. In that case, please do the following and the script will produce the required fasta files. <br><br>
@@ -84,27 +84,27 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     
     ```bash
     $ pip install genomedata --user
-    $ ./run_human_mouse_preprocess_data_steps.sh 1
+    $ ./run_human_monkey_preprocess_data_steps.sh 1
     ```
     
     - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library. <br><br>
     
     ```bash
-    $ ./run_human_mouse_preprocess_data_steps.sh 2
+    $ ./run_human_monkey_preprocess_data_steps.sh 2
     ```
     
     - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings. <br><br>
     
     ```bash
-    $ ./run_human_mouse_preprocess_data_steps.sh 3
+    $ ./run_human_monkey_preprocess_data_steps.sh 3
     ```
     
     - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files. <br><br>
     
     ```bash
-    $ ./run_human_mouse_preprocess_data_steps.sh 4
-    $ ./run_human_mouse_preprocess_data_steps.sh 5
-    $ ./run_human_mouse_preprocess_data_steps.sh 6
+    $ ./run_human_monkey_preprocess_data_steps.sh 4
+    $ ./run_human_monkey_preprocess_data_steps.sh 5
+    $ ./run_human_monkey_preprocess_data_steps.sh 6
     ```
    
 Users should look into these folders and follow the instructions to create the required input files before going to the next step.   
