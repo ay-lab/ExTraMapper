@@ -57,3 +57,6 @@ The users should run the _run_human_monkey_preprocess_data_steps.sh_ to generate
     $ ./run_human_mouse_preprocess_data_steps.sh 6
     ```
     <br>
+    
+#### Once finished the run_human_mouse_preprocess_data_steps.sh script shoudld produce the _data_ folder with the following subfolders.<br>
+(Note: The _phastConsScores_ directory under _data_ is not essential so it will be empty) 
