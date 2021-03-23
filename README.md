@@ -24,42 +24,47 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
     ```
-
-    B) This will fetch organism specific chromosomal fasta, gtf and liftOver files. 
-    
+    ```diff
+    + Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. 
+    ```
+    ```batch
     $ ./run_human_mouse_preprocess_data_steps.sh 0
-
-
-    C) The above step may produce an error while downloading the monkey genome from UCSC. 
-       In that case, please do the following and the script will produce the required fasta files.
-    
+    ```
+    ```diff
+    + The above step may produce an error while downloading the monkey genome from UCSC. In that case, please do the following and the script will produce the required fasta files.
+    ```
+    ```bash
     $ cd ./preprocess/data/reference_genomes/rheMac10/
     $ perl getFasta.pl
     $ cd -
-
-    D) The next step will create the genomedata object files. This step requires genomedata package
-       which can be installed by running the following commnand and followed by the step 1 commnad.
-    
+    ```
+    ```diff
+    + The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand.
+    ```
+    ```bash
     $ pip install genomedata --user
     $ ./run_human_mouse_preprocess_data_steps.sh 1
-
-
-    E) The step below will create pickle files and gene summaries
-    
+    ```
+    ```diff
+    + The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library.
+    ```
+    ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 2
-
-
-    F) The following step will run the liftOver with multiple mappings and also compute intersections with the other set of exons
-    
+    ```
+    ```diff
+    + The following step will run the liftOver with multiple mappings.
+    ```
+    ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 3
-
-
-    G) The next three steps will generate the input files
-    
+    ```
+    ```diff
+    + The next three steps will generate the input files
+    ```
+    ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 4
     $ ./run_human_mouse_preprocess_data_steps.sh 5
     $ ./run_human_mouse_preprocess_data_steps.sh 6
-   
+    ```
    
 Users should look into these folders and follow the instructions to create the required input files before going to the next step.   
 
