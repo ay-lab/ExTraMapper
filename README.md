@@ -10,16 +10,16 @@ ExTraMapper is a tool to find Exon and Transcript-level Mappings of a given pair
 ExTraMapper requires a set of preprocessed files to find the conservation scores. Examples to create these files are provided within the following folders
 1. [__Human-Mouse-Preprocess-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Mouse-Preprocess-Data) 
     
-    Quick look:
+    Quick look
    
     and 
+    
 3. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
 
     Quick look:
     
-    ```diff
-    + Set the following path
-    ```
+   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `Set the following path`
+   
     ```bash
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
