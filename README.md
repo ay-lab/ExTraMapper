@@ -12,9 +12,13 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     
     Quick look:
    
-    ```bash 
-    A) Set the following path
-    
+    and 
+3. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
+
+    Quick look:
+    ```diff
+    + A) Set the following path
+    ```
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
 
@@ -52,10 +56,8 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     $ ./run_human_mouse_preprocess_data_steps.sh 4
     $ ./run_human_mouse_preprocess_data_steps.sh 5
     $ ./run_human_mouse_preprocess_data_steps.sh 6
-    ```
-    and 
-3. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
-
+   
+   
 Users should look into these folders and follow the instructions to create the required input files before going to the next step.   
 
 
