@@ -13,7 +13,8 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     Quick look:
    
     ```bash 
-    Set the following path
+    - Set the following path
+    
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
 
