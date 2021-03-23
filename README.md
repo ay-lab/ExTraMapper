@@ -9,43 +9,43 @@ ExTraMapper is a tool to find Exon and Transcript-level Mappings of a given pair
 ### Step 1: Prepare the input files
 ExTraMapper requires a set of preprocessed files to find the conservation scores. Examples to create these files are provided within the following folders
  
- 1. [__Human-Mouse-Preprocess-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Mouse-Preprocess-Data) 
+1. [__Human-Mouse-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Mouse-Processed-Data) 
+
+    Quick look:
     
-   Quick look
-   
    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Set the following path <br><br>
    
     ```bash
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
     ```
-    
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. <br><br>
+   
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. <br><br>
    
     ```batch
     $ ./run_human_mouse_preprocess_data_steps.sh 0
     ```
     
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand. <br><br>
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand. <br><br>
     
     ```bash
     $ pip install genomedata --user
     $ ./run_human_mouse_preprocess_data_steps.sh 1
     ```
     
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library. <br><br>
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library. <br><br>
     
     ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 2
     ```
     
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings. <br><br>
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings. <br><br>
     
     ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 3
     ```
     
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files. <br><br>
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files. <br><br>
     
     ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 4
