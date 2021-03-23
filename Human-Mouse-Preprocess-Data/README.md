@@ -74,4 +74,4 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
 <br>
 
 ##### The whole process should take some time to finish!
-##### (Check also the Human-Moneky data processing steps)
+##### [(Check also the Human-Moneky data processing steps)](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data)
