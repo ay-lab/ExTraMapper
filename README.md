@@ -16,11 +16,14 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
 3. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
 
     Quick look:
+    
     ```diff
-    @@ A) Set the following path@@
+    + Set the following path
     ```
+    ```bash
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
+    ```
 
     B) This will fetch organism specific chromosomal fasta, gtf and liftOver files. 
     
