@@ -122,9 +122,11 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
    
 Users should look into these folders and follow the instructions to create the required input files before going to the next step.   
 
+<br>
 
 ### Step 2: Set the following path
 ```bash export EXTRAMAPPER_DIR=/path/to/this/folder```
+<br>
 
 ### Step 3: Run ExTraMapper individually
 ```bash
