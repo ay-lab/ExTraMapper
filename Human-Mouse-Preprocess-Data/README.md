@@ -45,7 +45,6 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
     <br>
 
 #### Once finished the run_human_mouse_preprocess_data_steps.sh script shoudld produce the _data_ folder with the following subfolders.<br>
-(Note: The _phastConsScores_ directory under _data_ is not essential so it will be empty)  
 
 ```bash 
 .
@@ -55,19 +54,50 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
 |-- data
 |   |-- human-mouse
 |   |   |-- GTFsummaries
+|   |   |   |-- onlyOrthologAndCodingGenes
+|   |   |   |   |-- org1-allExons-GTFparsed.txt
+|   |   |   |   |-- org1-allGenes-GTFparsed.txt
+|   |   |   |   |-- org1-allTranscripts-GTFparsed.txt
+|   |   |   |   |-- org2-allExons-GTFparsed.txt
+|   |   |   |   |-- org2-allGenes-GTFparsed.txt
+|   |   |   |   `-- org2-allTranscripts-GTFparsed.txt
+|   |   |   |-- org1-allExons-GTFparsed.txt
+|   |   |   |-- org1-allGenes-GTFparsed.txt
+|   |   |   |-- org1-allTranscripts-GTFparsed.txt
+|   |   |   |-- org2-allExons-GTFparsed.txt
+|   |   |   |-- org2-allGenes-GTFparsed.txt
+|   |   |   `-- org2-allTranscripts-GTFparsed.txt
 |   |   |-- ensemblDownloads
+|   |   |   |-- org1.gtf
+|   |   |   |-- org1.gtf.gz
+|   |   |   |-- org1_homolog_org2.txt
+|   |   |   |-- org1_homolog_org2.txt.gz
+|   |   |   |-- org2.gtf
+|   |   |   |-- org2.gtf.gz
+|   |   |   |-- org2_homolog_org1.txt
+|   |   |   `-- org2_homolog_org1.txt.gz
 |   |   |-- genePairsSummary-one2one.txt
 |   |   |-- genomedataArchives
-|   |   |-- liftoverRelatedFiles
+|   |   |   |-- org1 [25 entries exceeds filelimit, not opening dir]
+|   |   |   `-- org2 [22 entries exceeds filelimit, not opening dir]
+|   |   |-- liftoverRelatedFiles [56 entries exceeds filelimit, not opening dir]
 |   |   |-- perExonLiftoverCoords
-|   |   |-- perGenePairPickledInfo
-|   |   `-- phastConsScores
+|   |   |   |-- org1 [654707 entries exceeds filelimit, not opening dir]
+|   |   |   `-- org2 [484860 entries exceeds filelimit, not opening dir]
+|   |   |-- perGenePairPickledInfo [15804 entries exceeds filelimit, not opening dir]
+|   |   
 |   |-- liftover_chains
 |   |   |-- hg38
+|   |   |   `-- liftOver
+|   |   |       |-- hg38ToMm10.over.chain.gz
+|   |   |       `-- hg38ToMm10.over.chain.gz.1
 |   |   `-- mm10
+|   |       `-- liftOver
+|   |           |-- mm10ToHg38.over.chain.gz
+|   |           `-- mm10ToHg38.over.chain.gz.1
 |   `-- reference_genomes
-|       |-- hg38
-|       `-- mm10
+|       |-- hg38 [27 entries exceeds filelimit, not opening dir]
+|       `-- mm10 [24 entries exceeds filelimit, not opening dir]
 `-- scripts
     `-- splitExonsIntoIndividualFiles.py
 ```
