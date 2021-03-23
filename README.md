@@ -24,42 +24,42 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
     cd $EXTRAMAPPER_DIR
     ```
-    ```diff
-    + Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. 
-    ```
+   
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. 
+   
     ```batch
     $ ./run_human_mouse_preprocess_data_steps.sh 0
     ```
-    ```diff
-    + The above step may produce an error while downloading the monkey genome from UCSC. In that case, please do the following and the script will produce the required fasta files.
-    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The above step may produce an error while downloading the monkey genome from UCSC. In that case, please do the following and the script will produce the required fasta files.
+    
     ```bash
     $ cd ./preprocess/data/reference_genomes/rheMac10/
     $ perl getFasta.pl
     $ cd -
     ```
-    ```diff
-    + The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand.
-    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand.
+    
     ```bash
     $ pip install genomedata --user
     $ ./run_human_mouse_preprocess_data_steps.sh 1
     ```
-    ```diff
-    + The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library.
-    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library.
+    
     ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 2
     ```
-    ```diff
-    + The following step will run the liftOver with multiple mappings.
-    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings.
+    
     ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 3
     ```
-    ```diff
-    + The next three steps will generate the input files
-    ```
+    
+    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files
+    
     ```bash
     $ ./run_human_mouse_preprocess_data_steps.sh 4
     $ ./run_human_mouse_preprocess_data_steps.sh 5
