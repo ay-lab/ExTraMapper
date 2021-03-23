@@ -144,6 +144,78 @@ optional arguments:
   -p ORTHOLOG  Orthologous gene pair [e.g. ENSG00000141510-ENSMUSG00000059552 OR all]
 ```
 
+#### Example run 
+```bash
+$ python ExTraMapper.py -m 1 -o1 human -o2 mouse -p ENSG00000141510-ENSMUSG00000059552
+
+Finding exon mappings for gene pair number 0    ENSG00000141510-ENSMUSG00000059552
+*****************************************************************
+Gene pair ID: ENSG00000141510-ENSMUSG00000059552
+
+Information about each gene. Last two numbers are no of transcripts and exons
+ENSG00000141510 chr17   7661779 7687538 -       ENSG00000141510 TP53    protein_coding  27      49      gene
+ENSMUSG00000059552      chr11   69580359        69591873        +       ENSMUSG00000059552      Trp53   protein_coding  6       24      gene
+
+Number of exons before and after duplicate removal according to coordinates
+Org1    49      40
+Org2    24      20
+
+*****************************************************************
+
+*****************************************************************
+GCGCTGGGGACCTGTCCCTAGGGGGCAGATGAGACACTGATGGGCGTACTTAGAGATTTGCCATGAAGTGGGTTTGAAGAATGGAGCTGTGTGTGAAAT
+Exon file type summaries for the first gene from: ENSG00000141510-ENSMUSG00000059552
+        0 exons with: No file exists
+        22 exons with: Only Mapped
+        0 exons with: Only nonintersecting
+        11 exons with: Only unmapped
+        15 exons with: Mapped and unmapped
+        0 exons with: Mapped and nonintersecting
+        1 exons with: Nonintersecting and unmapped
+        0 exons with: All three files
+Exon file type summaries for the second gene from: ENSG00000141510-ENSMUSG00000059552
+        0 exons with: No file exists
+        14 exons with: Only Mapped
+        0 exons with: Only nonintersecting
+        3 exons with: Only unmapped
+        7 exons with: Mapped and unmapped
+        0 exons with: Mapped and nonintersecting
+        0 exons with: Nonintersecting and unmapped
+        0 exons with: All three files
+Writing exon-level similarity scores into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/exonLevelSimilarities-1.0.txt
+
+Writing exon classes into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/exonClasses-1.0.txt
+        For org1: Mapped exons= 17, Unmapped exons= 21, Nonintersecting exons= 1, OTHER= 10
+        For org2: Mapped exons= 13, Unmapped exons= 7, Nonintersecting exons= 0, OTHER= 4
+*****************************************************************
+
+*****************************************************************
+Writing exon-level mappings into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/exonLevelMappings-1.0.txt
+Writing trascript-level similarity scores into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/transcriptLevelSimilarities-1.0.txt
+Writing transcript-level mappings into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/transcriptLevelMappings-1.0.txt
+
+Condition counter from the greedy transcript mapping stage:
+        5 pairs with Condition1: Unique winner pair
+        0 pairs with Condition2: Tie in one score, not in the other
+        0 pairs with Condition3: Tie in both scores but coding exon length diff breaks the tie
+        0 pairs with Condition4: Tie in both scores and coding exon length diff but overall exon length breaks the tie
+        1 pairs with Condition5: Tie in all the above but coding length (bp) diff breaks the tie
+        0 pairs with Condition6: Tie in all the above, just give up and report all
+
+Writing UCSC browser bed output for org1 into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/org1-ucsc-1.0.bed
+Writing UCSC browser bed output for org2 into file:
+ /path/output/human-mouse/ENSG00000141510-ENSMUSG00000059552/org2-ucsc-1.0.bed
+
+........
+ExTraMapper ran successfully for 1 gene pairs between: human and mouse
+```
+
 # OR
 
 ### Step 3: Run ExTraMapper for all the gene pairs
