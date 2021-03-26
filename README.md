@@ -61,7 +61,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     
     and 
     
-2. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
+2. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) (Human-Rhesus_macaque)
 
     Quick look:
     
@@ -233,7 +233,9 @@ $ tree ./output
 
 Note: The __exonLevelMappings-1.0.txt__ & __transcriptLevelMappings-1.0.txt__ file contains the mapped exon and transcript pairs from __ENSG00000141510-ENSMUSG00000059552__ orthologous gene-pair. 
 
-## Prepocessed Results
+<br>
+
+# Prepocessed Results
 
 Check the [Result/Exon-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Exon-Pairs) and [Result/Transcript-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Transcript-Pairs) to download the precomputed ExTraMapper result for human-mouse and human-rhesus orthologous exon and transcript pairs.
 
