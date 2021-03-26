@@ -61,7 +61,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     
     and 
     
-2. [__Human-Mokey-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) (Human-Rhesus_macaque)
+2. [__Human-Rhesus_macaque-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
 
     Quick look:
     
