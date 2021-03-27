@@ -235,12 +235,6 @@ Note: The __exonLevelMappings-1.0.txt__ & __transcriptLevelMappings-1.0.txt__ fi
 
 <br>
 
-# Prepocessed Results
-
-Check the [Result/Exon-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Exon-Pairs) and [Result/Transcript-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Transcript-Pairs) to download the precomputed ExTraMapper result for human-mouse and human-rhesus orthologous exon and transcript pairs.
-
-<br>
-
 # OR
 
 ### Step 3: Run ExTraMapper for all the gene pairs
@@ -248,6 +242,14 @@ Check the [Result/Exon-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/
 $ python ExTraMapper.py -h
 usage: ExTraMapper.py [-h] -m MAPPING -o1 ORG1 -o2 ORG2 -p all
 ```
+
+<br>
+
+# Prepocessed Results
+
+Check the [Result/Exon-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Exon-Pairs) and [Result/Transcript-Pairs](https://github.com/ay-lab/ExTraMapper/tree/master/Result/Transcript-Pairs) to download the precomputed ExTraMapper result for human-mouse and human-rhesus orthologous exon and transcript pairs.
+
+<br>
 
 ### Refer the work
 [_ExTraMapper: Exon- and Transcript-level mappings for orthologous gene pairs._](https://www.biorxiv.org/content/10.1101/277723v1)
