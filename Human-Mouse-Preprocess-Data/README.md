@@ -33,7 +33,7 @@ The users should run the _extMpreprocess_ to generate the inputfiles. All the in
  
     <br>
 
-#### Once finished the run_human_mouse_preprocess_data_steps.sh script shoudld produce the _data_ folder with the following subfolders.<br>
+#### Once finished the _extMpreprocess_ script shoudld produce the _preprocess folder with the following subfolders.<br>
 
 ```bash 
 ./preprocess
