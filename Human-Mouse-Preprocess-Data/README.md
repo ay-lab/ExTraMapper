@@ -23,7 +23,7 @@ The users should run the _extMpreprocess_ to generate the inputfiles. All the in
     ```
    <br>
    <br>
- - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The script required genomedata package which can be installed by running the following commnand. <br>
+ - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The script requires genomedata package which can be installed by running the following commnand. <br>
     
     ```bash
     $ pip install genomedata --user
