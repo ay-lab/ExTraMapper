@@ -47,10 +47,9 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
 #### Once finished the run_human_mouse_preprocess_data_steps.sh script shoudld produce the _data_ folder with the following subfolders.<br>
 
 ```bash 
-.
+./preprocess
 |-- bin
-|   |-- liftOver
-|   `-- liftover-withMultiples
+|   `-- liftOver
 |-- data
 |   |-- human-mouse
 |   |   |-- GTFsummaries
@@ -89,17 +88,14 @@ The users should run the _run_human_mouse_preprocess_data_steps.sh_ to generate 
 |   |-- liftover_chains
 |   |   |-- hg38
 |   |   |   `-- liftOver
-|   |   |       |-- hg38ToMm10.over.chain.gz
-|   |   |       `-- hg38ToMm10.over.chain.gz.1
+|   |   |       `-- hg38ToMm10.over.chain.gz
 |   |   `-- mm10
 |   |       `-- liftOver
-|   |           |-- mm10ToHg38.over.chain.gz
-|   |           `-- mm10ToHg38.over.chain.gz.1
+|   |           `-- mm10ToHg38.over.chain.gz
 |   `-- reference_genomes
 |       |-- hg38 [27 entries exceeds filelimit, not opening dir]
 |       `-- mm10 [24 entries exceeds filelimit, not opening dir]
-`-- scripts
-    `-- splitExonsIntoIndividualFiles.py
+
 ```
 <br>
 
