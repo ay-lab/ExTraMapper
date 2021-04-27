@@ -72,7 +72,7 @@ if ($#ARGV == -1 || $ARGV[0] eq "help") {
   print ("Step 1: Download per organism specific files e.g. reference genomes, gene annotation files.\n");
   print ("Step 2: Will create genomedata archives with the genomes of org1 and org2 (Make sure to install genomedata package).\n");
   print ("Step 3: Pickle files for each homologous gene pair will be created.\n");
-  print ("Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools).\n");
+  print ("Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools and liftOver executables).\n");
   print ("Step 5-7: postprocessing the liftOver files.\n");
   print ("\n");
   exit();
