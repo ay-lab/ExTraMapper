@@ -18,7 +18,7 @@ The users should run the _extMpreprocess_ to generate the inputfiles. All the in
     Step 1: Download per organism specific files e.g. reference genomes, gene annotation files.
     Step 2: Will create genomedata archives with the genomes of org1 and org2 (Make sure to install genomedata package).
     Step 3: Pickle files for each homologous gene pair will be created.
-    Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools).
+    Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools and liftOver executables).
     Step 5-7: postprocessing the liftOver files.
     ```
    <br>
