@@ -1,0 +1,733 @@
+#!/usr/bin/perl 
+
+## This script will download and preprocess the dataset required for 
+## exon-pair and transcript pair finding by ExTraMapper.
+## The script requires a config.conf file which will direct this script
+## to download and process the essential data. 
+
+##################### config.conf file #####################
+## Example of human-monkey confif.conf file:
+##
+## #Reference genome versions
+## ref1=hg38
+## ref2=rheMac10
+##
+## #Short names of organisms
+## org1=human
+## org2=rhesus
+##
+## #Ensembl release version number to be used for both organisms
+## releaseNo=102
+##
+## #Find out the standard Ensembl names for your organisms of interest from ftp://ftp.ensembl.org/pub/release-81/gtf/
+## org1EnsemblName=homo_sapiens
+## org2EnsemblName=macaca_mulatta
+##
+## #Find out the full and short Ensembl Mart names for your organisms of interest from ftp://ftp.ensembl.org/pub/release-81/mysql/ensembl_mart_102
+## org1EnsemblMartName=hsapiens
+## org2EnsemblMartName=mmulatta
+## org1EnsemblMartNameShort=hsap
+## org2EnsemblMartNameShort=mmul
+##
+## #liftOver executable path (Check here https://hgdownload.cse.ucsc.edu/admin/exe)
+## liftOver=./usr/bin/liftOver
+##
+##
+## Example of human-mouse confif.conf file:
+##
+## #Reference genome versions
+## ref1=hg38
+## ref2=mm10
+##
+## #Short names of organisms
+## org1=human
+## org2=mouse
+##
+## #Ensembl release version number to be used for both organisms
+## releaseNo=102
+##
+## #Find out the standard Ensembl names for your organisms of interest from ftp://ftp.ensembl.org/pub/release-81/gtf/
+## org1EnsemblName=homo_sapiens
+## org2EnsemblName=mus_musculus
+##
+## #Find out the full and short Ensembl Mart names for your organisms of interest from ftp://ftp.ensembl.org/pub/release-81/mysql/ensembl_mart_102
+## org1EnsemblMartName=hsapiens
+## org2EnsemblMartName=mmusculus
+## org1EnsemblMartNameShort=hsap
+## org2EnsemblMartNameShort=mmus
+##
+## #liftOver executable path (Check here https://hgdownload.cse.ucsc.edu/admin/exe)
+## liftOver=./usr/bin/liftOver
+##
+############################################################
+
+if ($#ARGV == -1 || $ARGV[0] eq "help") {
+  print ("\n");
+  print ("This script will download and preprocess the dataset required for exon-pair and transcript pair finding by ExTraMapper.\n");
+  print ("Type ./extMpreprocess <config.conf> <step> to execute the script.\n");
+  print ("Type ./extMpreprocess example to print a example config.conf file.\n\n");
+  print ("This script will run seven (7) sequential steps to create the inputs for ExTraMapper program.\n");
+  print ("Users can provide step numbers (1-7) or all in the <step> arugemt of this script.\n");
+  print ("Short description of the individual scripts:\n");
+  print ("Step 1: Download per organism specific files e.g. reference genomes, gene annotation files.\n");
+  print ("Step 2: Will create genomedata archives with the genomes of org1 and org2 (Make sure to install genomedata package).\n");
+  print ("Step 3: Pickle files for each homologous gene pair will be created.\n");
+  print ("Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools).\n");
+  print ("Step 5-7: postprocessing the liftOver files.\n");
+  print ("\n");
+  exit();
+} elsif ($ARGV[0] eq "example") {
+  my @exmpl = "# reference genome versions
+ref1=hg38
+ref2=mm10
+
+# short names of organisms
+org1=human
+org2=mouse
+
+# Ensembl release version number to be used for both organisms
+releaseNo=102
+
+# Find out the standard Ensembl names for your organisms of interest from ftp://ftp.ensembl.org/pub/release-81/gtf/
+org1EnsemblName=homo_sapiens
+org2EnsemblName=mus_musculus
+
+# Find out the full and short Ensembl Mart names for your organisms of interest from ftp://ftp.ensembl.org/pub/release-81/mysql/ensembl_mart_81
+org1EnsemblMartName=hsapiens
+org2EnsemblMartName=mmusculus
+org1EnsemblMartNameShort=hsap
+org2EnsemblMartNameShort=mmus
+
+#liftOver executable path (Check here https://hgdownload.cse.ucsc.edu/admin/exe)
+liftOver=/usr/bin/liftOver\n";
+ 
+ print (@exmpl);
+ print ("\n");
+ open (out, ">config.human-mouse.conf");
+ print out @exmpl;
+ close out;
+ print ("The example config.human-mouse.conf file is written\n"); 
+ exit;
+} 
+my ($configfile, $step) = @ARGV;
+chomp ($configfile, $step);
+
+#### File and folder check ####
+die "The $configfile does not exists, exit!" unless -e "$configfile";
+
+
+#### Get the environmental variables ####
+$ENV{'EXTRAMAPPER_DIR'} = $ENV{'PWD'};
+open(in, $configfile);
+while (my $var = <in> ) {
+  chomp $var;
+  if ($var =~ /=/) {
+    $var_n = (split(/=/,$var))[0];
+    $var_v = (split(/=/,$var))[1];
+    $ENV{$var_n} = $var_v;
+  } 
+}
+close in;
+
+#### Set the variable folders and files ####
+$dataDir             = "$ENV{'EXTRAMAPPER_DIR'}/preprocess/data";
+$dataDirPerPair      = "$ENV{'EXTRAMAPPER_DIR'}/preprocess/data/$ENV{'org1'}-$ENV{'org2'}";
+$referenceGenomesDir = "$dataDir/reference_genomes";
+$chainsDir           = "$dataDir/liftover_chains";
+$ensemblDir          = "$dataDirPerPair/ensemblDownloads";
+$genomedataDir       = "$dataDirPerPair/genomedataArchives";
+$GTFsummaryDir       = "$dataDirPerPair/GTFsummaries";
+$perGenePairPickleDir= "$dataDirPerPair/perGenePairPickledInfo";
+$liftOverFilesDir    = "$dataDirPerPair/liftoverRelatedFiles";
+$perExonLiftoverDir  = "$dataDirPerPair/perExonLiftoverCoords";
+
+#### Main functions and sub-routines ####
+sub getfasta {
+  my $path = $_[0];
+  my $org  = $_[1];
+  my %chr;
+  open(chrname,"$path/$org/name_chr.txt");
+  while ( <chrname> ){
+    chomp $_;
+    $chr{$_} = 1;
+  }
+  close (chrname);
+
+  my $file = "$path/$org/$org.fa.gz";
+  open(in, "zcat $file |");
+  while ( <in> ) {
+    chomp $_;
+    if ($_ =~ />/) {
+      $name = $_;
+      $ckpt = 0;
+      $name =~ s/>//g;
+      if ($chr{$name} ne "") {
+        print ("Extracting $name from $org.fa.gz file\n");
+        $ckpt = 1;
+        open($out,"|gzip -c > $path/$org/$name.fa.gz");
+        print $out (">$name\n");
+      } else {
+        close ($out);
+      }
+    } else {
+      if ($ckpt == 1) {
+        print $out ("$_\n");
+      }
+    }
+  }
+  close(in);
+  system("rm -rf $path/$org/$org.fa.gz");
+  print ("Finished extracting chromosomes and writing the individual *.fa.gz files\n");
+  print ("Removed $path/$org/$org.fa.gz\n");
+}
+
+sub downloadrefgenome {
+
+  my $path = $_[0];
+  my $org  = $_[1];
+  if (!-d "$path/$org") {
+    print ("Creating $path/$org folder\n");
+    system("mkdir -p $path/$org");
+    print ("Running: wget --timestamping ftp://hgdownload.cse.ucsc.edu/goldenPath/$org/chromosomes/* --directory-prefix=$path/$org 2>&1 | grep \"Login incorrect\"\n");
+    my $error = `wget --timestamping ftp://hgdownload.cse.ucsc.edu/goldenPath/$org/chromosomes/* --directory-prefix=$path/$org 2>&1 | grep "No such directory"`;
+    if ($error =~ "No such directory") {
+      print ("There is no chromosome folder for $org. So, downloding the bigZip file and extracting them\n");
+      print ("Running: wget --timestamping ftp://hgdownload.cse.ucsc.edu/goldenPath/$org/bigZips/$org.fa.gz --directory-prefix=$path/$org 2> /dev/null\n");
+      system("wget --timestamping ftp://hgdownload.cse.ucsc.edu/goldenPath/$org/bigZips/$org.fa.gz --directory-prefix=$path/$org 2> /dev/null"); 
+      print ("Extracting the individual chromosomes\n");
+      print ("zcat $path/$org/$org.fa.gz |grep \">\" |grep -v \"_random\" |grep -v \"chrUn\" |sed 's/>//g' > $path/$org/name_chr.txt\n");
+      system("zcat $path/$org/$org.fa.gz |grep \">\" |grep -v \"_random\" |grep -v \"chrUn\" |sed 's/>//g' > $path/$org/name_chr.txt");
+      getfasta($path, $org);
+      print "Reference genomes are downloaded in $path/$org\n";
+    } else {
+      system("rm -rf $path/$org/*_random*");
+      system("rm -rf $path/$org/chrUn*");
+      system("rm -rf $path/$org/*_alt*");
+    }
+  } else {
+    print ("$path/$org folder already exists, skipping downloading the dataset\n");
+  }
+}
+
+sub downloadliftoverfiles {
+ 
+  my $path = $_[0];
+  my $org1 = $_[1];
+  my $org2 = $_[2];
+  if (!-d "$path/$org1/liftOver") {
+    print ("Creating $path/$org1/liftOver folder\n");
+    system("mkdir -p $path/$org1/liftOver");
+    my $ref2Cap =`echo $org2 | python -c "s=input(); print (s[0].upper()+s[1:])"`; 
+    chomp $ref2Cap;
+    my $chain_name = $org1."To".$ref2Cap;
+    print ("Running: wget http://hgdownload.cse.ucsc.edu/goldenPath/$org1/liftOver/$chain_name.over.chain.gz --directory-prefix=$path/$org1/liftOver\n"); 
+    system("wget http://hgdownload.cse.ucsc.edu/goldenPath/$org1/liftOver/$chain_name.over.chain.gz --directory-prefix=$path/$org1/liftOver 2> /dev/null");
+    print ("LiftOver chain saved to $path/$org1/liftOver/$chain_name.over.chain.gz\n");
+  } else {
+    print ("$path/$org1 folder already exists, skipping download\n");
+  }
+}
+
+sub downloadensmblfiles {
+ 
+  my $path                = $_[0];
+  my $releaseNo           = $_[1];
+  my $org1EnsemblName     = $_[2];
+  my $org1EnsemblMartName = $_[3];
+  my $org2EnsemblName     = $_[4];
+  my $org2EnsemblMartName = $_[5];
+ 
+  print ("Downloading GTF files\n");
+  if (!-e "$path/org1.gtf.gz") {
+    print ("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/gtf/$org1EnsemblName/*.$releaseNo.gtf.gz -O $path/org1.gtf.gz\n");
+    system("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/gtf/$org1EnsemblName/*.$releaseNo.gtf.gz -O $path/org1.gtf.gz 2> /dev/null");
+    print ("GTF files downloaded in $path\n");
+  } else {
+    print ("$path/org1.gtf.gz file exists, skipping download\n");
+  }
+  if (!-e "$path/org2.gtf.gz") {
+    print ("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/gtf/$org2EnsemblName/*.$releaseNo.gtf.gz -O $path/org2.gtf.gz\n");
+    system("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/gtf/$org2EnsemblName/*.$releaseNo.gtf.gz -O $path/org2.gtf.gz 2> /dev/null");
+    print ("GTF files downloaded in $path\n");
+  } else {
+    print ("$path/org2.gtf.gz file exists, skipping download\n");
+  }
+ 
+  print ("Downloading ENSEMBL homologs\n");
+  if (!-e "$path/org1_homolog_org2.txt.gz") {
+    print ("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/mysql/ensembl_mart_$releaseNo/$org1EnsemblMartName\_gene_ensembl__homolog_$org2EnsemblMartName\__dm.txt.gz -O $path/org1_homolog_org2.txt.gz\n");
+    system("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/mysql/ensembl_mart_$releaseNo/$org1EnsemblMartName\_gene_ensembl__homolog_$org2EnsemblMartName\__dm.txt.gz -O $path/org1_homolog_org2.txt.gz 2> /dev/null");
+    print ("ENSEMBL homolog downloaded in $path\n");
+  } else {
+    print ("$path/org1_homolog_org2.txt.gz file exists, skipping download\n");
+  }
+
+  if (!-e "$path/org2_homolog_org1.txt.gz") {
+    print ("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/mysql/ensembl_mart_$releaseNo/$org2EnsemblMartName\_gene_ensembl__homolog_$org1EnsemblMartName\__dm.txt.gz -O $path/org2_homolog_org1.txt.gz\n");
+    system("wget ftp://ftp.ensembl.org/pub/release-$releaseNo/mysql/ensembl_mart_$releaseNo/$org2EnsemblMartName\_gene_ensembl__homolog_$org1EnsemblMartName\__dm.txt.gz -O $path/org2_homolog_org1.txt.gz 2> /dev/null");
+    print ("ENSEMBL homolog downloaded in $path\n");
+  } else {
+    print ("$path/org2_homolog_org1.txt.gz file exists, skipping download\n");
+  }
+
+}
+
+sub ltime {
+   
+  my $time = localtime;
+  return($time);
+}
+
+sub genomedataarchive {
+
+  my $path = $_[0];
+  my $org  = $_[1];
+  my $ref  = $_[2];
+  my $referenceGenomesDir = $_[3]; 
+  my $old_path = $ENV{'PWD'};
+  chdir $path;
+  if (-e "$ref.fa") {
+    print ("Deleting the existing $ref.fa\n");
+    system("rm -rf $ref.fa");
+  }
+  if (!-d $org) {
+    print ("Running : zcat $referenceGenomesDir/$ref/*.fa.gz > $ref.fa\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $referenceGenomesDir/$ref/*.fa.gz > $ref.fa");
+    print ("Ended at ",ltime(),"\n");
+    print ("Running : genomedata-load-seq -d $org $ref.fa\n");
+    print ("Started at ",ltime(),"\n");
+    system("genomedata-load-seq -d $org $ref.fa");
+    system("genomedata-close-data $org");
+    print ("Ended at ",ltime(),"\n");
+    system("rm -rf $ref.fa");
+  } else {
+    print ("$org genomedata exists, skipping the step\n");
+  }
+  chdir $old_path;
+}
+
+sub parseAndPicklePerPair {
+
+  my $extmapper_path       = $_[0];
+  my $ensemblDir           = $_[1];
+  my $dataDirPerPair       = $_[2];
+  my $GTFsummaryDir        = $_[3]; 
+  my $perGenePairPickleDir = $_[4];
+   
+  if (!-e "$ensemblDir/org1.gtf") {
+    print ("Running : gunzip -k $ensemblDir/org1.gtf.gz\n");
+    system("gunzip -k $ensemblDir/org1.gtf.gz");
+  } else {
+    print ("$ensemblDir/org1.gtf file present, skipping gunzip action\n");
+  }
+  if (!-e "$ensemblDir/org2.gtf") {
+    print ("Running : gunzip -k $ensemblDir/org2.gtf.gz\n");
+    system("gunzip -k $ensemblDir/org2.gtf.gz");
+  } else {
+    print ("$ensemblDir/org2.gtf file present, skipping gunzip action\n");
+  }
+  if (!-e "$ensemblDir/org1_homolog_org2.txt") {
+    print ("Running : gunzip -k $ensemblDir/org1_homolog_org2.txt.gz\n");
+    system("gunzip -k $ensemblDir/org1_homolog_org2.txt.gz");
+  } else {
+    print ("$ensemblDir/org1_homolog_org2.txt file present, skipping gunzip action\n");
+  }
+  if (!-e "$ensemblDir/org2_homolog_org1.txt") {
+    print ("Running : gunzip -k $ensemblDir/org2_homolog_org1.txt.gz\n");
+    system("gunzip -k $ensemblDir/org2_homolog_org1.txt.gz");
+  } else {
+    print ("$ensemblDir/org2_homolog_org1.txt file present, skipping gunzip action\n");
+  }
+
+  if (!-d $perGenePairPickleDir) {
+    print ("Running : python $extmapper_path/scripts/parseAndPicklePerPair.py $dataDirPerPair $GTFsummaryDir $perGenePairPickleDir\n");
+    print ("Started at ",ltime(),"\n");
+    system("python $extmapper_path/scripts/parseAndPicklePerPair.py $dataDirPerPair $GTFsummaryDir $perGenePairPickleDir");
+    print ("Ended at ",ltime(),"\n");
+    system("mv $perGenePairPickleDir/genePairsSummary-one2one.txt $dataDirPerPair/genePairsSummary-one2one.txt");
+  } else {
+    print ("perGenePairPickleDir found, skipping\n");
+  }
+}
+
+sub liftoverexonmultiplemapping {
+
+  my $GTFsummaryDir    = $_[0];
+  my $liftOverFilesDir = $_[1];
+  my $chainsDir = $_[2];
+  my $ref1 = $_[3];
+  my $ref2 = $_[4];
+  my $extmapper_path = $_[5]; 
+
+  my $indir = "$GTFsummaryDir/onlyOrthologAndCodingGenes";
+ 
+  print ("Running : cat $indir/org1-allExons-GTFparsed.txt | awk -v OFS='\\t' 'NR>1{print \$1,\$2,\$3,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org1_allExonsList.bed\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $indir/org1-allExons-GTFparsed.txt | awk -v OFS='\\t' 'NR>1{print \$1,\$2,\$3,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org1_allExonsList.bed");
+  print ("Ended at ",ltime(),"\n");
+  
+  print ("Running : cat $indir/org2-allExons-GTFparsed.txt | awk -v OFS='\\t' 'NR>1{print \$1,\$2,\$3,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org2_allExonsList.bed\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $indir/org2-allExons-GTFparsed.txt | awk -v OFS='\\t' 'NR>1{print \$1,\$2,\$3,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org2_allExonsList.bed");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $indir/org1-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"partCoding\" {print \$1,\$7,\$8,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org1_partCodingExonsList.bed\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $indir/org1-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"partCoding\" {print \$1,\$7,\$8,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org1_partCodingExonsList.bed");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $indir/org2-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"partCoding\" {print \$1,\$7,\$8,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org2_partCodingExonsList.bed\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $indir/org2-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"partCoding\" {print \$1,\$7,\$8,\$4,\$5}' | sort -k1,1 -k2,2n > $liftOverFilesDir/org2_partCodingExonsList.bed");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $indir/org1-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"fullCoding\" {print \$1,\$2,\$3,\$4,\$5}' > $liftOverFilesDir/org1_f.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $indir/org1-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"fullCoding\" {print \$1,\$2,\$3,\$4,\$5}' > $liftOverFilesDir/org1_f.temp");
+  print ("Ended at ",ltime(),"\n");
+ 
+  print ("Running : cat $indir/org2-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"fullCoding\" {print \$1,\$2,\$3,\$4,\$5}' > $liftOverFilesDir/org2_f.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $indir/org2-allExons-GTFparsed.txt |awk -v OFS='\\t' '\$6==\"fullCoding\" {print \$1,\$2,\$3,\$4,\$5}' > $liftOverFilesDir/org2_f.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org1_partCodingExonsList.bed $liftOverFilesDir/org1_f.temp | sort -k1,1 -k2,2n > $liftOverFilesDir/org1_allCodingExonsList.bed\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org1_partCodingExonsList.bed $liftOverFilesDir/org1_f.temp | sort -k1,1 -k2,2n > $liftOverFilesDir/org1_allCodingExonsList.bed");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org2_partCodingExonsList.bed $liftOverFilesDir/org2_f.temp | sort -k1,1 -k2,2n > $liftOverFilesDir/org2_allCodingExonsList.bed\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org2_partCodingExonsList.bed $liftOverFilesDir/org2_f.temp | sort -k1,1 -k2,2n > $liftOverFilesDir/org2_allCodingExonsList.bed");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org1_allCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org1_allCodingExonsList.sorted.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org1_allCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org1_allCodingExonsList.sorted.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org2_allCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org2_allCodingExonsList.sorted.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org2_allCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org2_allCodingExonsList.sorted.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org1_allExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org1_allExonsList.sorted.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org1_allExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org1_allExonsList.sorted.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org2_allExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org2_allExonsList.sorted.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org2_allExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org2_allExonsList.sorted.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org1_partCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org1_partCodingExonsList.sorted.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org1_partCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org1_partCodingExonsList.sorted.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat $liftOverFilesDir/org2_partCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org2_partCodingExonsList.sorted.temp\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat $liftOverFilesDir/org2_partCodingExonsList.bed |awk '{print \$5,\$0}' | sort -k1,1 > $liftOverFilesDir/org2_partCodingExonsList.sorted.temp");
+  print ("Ended at ",ltime(),"\n");
+
+  my $chain1to2=`ls $chainsDir/$ref1/liftOver/*.over.chain.gz`;
+  my $chain2to1=`ls $chainsDir/$ref2/liftOver/*.over.chain.gz`;
+  chomp ($chain1to2, $chain2to1);
+  
+  foreach my $minMatch (qw{1 0.95 0.9}) {
+    print ("Running : $extmapper_path/scripts/liftover-withMultiples 0 $minMatch $chain1to2 $chain2to1\n"); 
+    print ("Started at ",ltime(),"\n");
+    system("$extmapper_path/scripts/liftover-withMultiples 0 $minMatch $chain1to2 $chain2to1");
+    print ("Ended at ",ltime(),"\n");
+  }
+  system("rm -rf $liftOverFilesDir/org2_allExonsList.sorted.temp");
+  system("rm -rf $liftOverFilesDir/org1_allExonsList.sorted.temp");
+  system("rm -rf $liftOverFilesDir/org2_partCodingExonsList.sorted.temp");
+  system("rm -rf $liftOverFilesDir/org1_partCodingExonsList.sorted.temp"); 
+  system("rm -rf $liftOverFilesDir/org2_allCodingExonsList.sorted.temp");
+  system("rm -rf $liftOverFilesDir/org1_allCodingExonsList.sorted.temp");
+}
+
+sub liftoverfilesprocess {
+
+  my $indir  = $_[0];
+  my $outdir = $_[1];
+  my $flank  = $_[2];
+  my $extmapper_path = $_[3];
+
+  if (-e "oneHugeFile-2to1-partCoding.txt") {
+    system("rm -rf oneHugeFile-2to1-partCoding.txt");
+  }
+  if (-e "oneHugeFile-1to2-partCoding.txt") {
+    system("rm -rf oneHugeFile-1to2-partCoding.txt");
+  }
+
+  foreach my $minMatch (qw{1 0.95 0.9}) {
+    $suffix="flank$flank-minMatch$minMatch-multiples-partCoding";
+    print ("Running : zcat $indir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\".\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-2to1-partCoding.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\".\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-2to1-partCoding.txt");
+    print ("Ended at ",ltime(),"\n");
+
+    print ("Running : zcat $indir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\".\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-1to2-partCoding.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\".\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-1to2-partCoding.txt");
+    print ("Started at ",ltime(),"\n");
+  }
+
+  if (-e "oneHugeFile-2to1-others.txt") {
+    system("rm -rf oneHugeFile-2to1-others.txt");
+  } 
+  if (-e "oneHugeFile-1to2-others.txt") {
+    system("rm -rf oneHugeFile-1to2-others.txt");
+  }
+
+  foreach my $minMatch (qw{1 0.95 0.9}) {
+    $suffix="flank$flank-minMatch$minMatch-multiples";
+    print ("Running : zcat $indir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\"\.\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-2to1-others.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org1_VS_org2_to_org1_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\"\.\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-2to1-others.txt");
+    print ("Ended at ",ltime(),"\n");
+
+    print ("Running : zcat $indir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\"\.\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-1to2-others.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org2_VS_org1_to_org2_intersectingExonsList-$suffix.bed.gz |awk -v OFS='\\t' '\$6!=\"\.\"{print \$1,\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$11,\$9,\$12,s}' s=$suffix >> oneHugeFile-1to2-others.txt");
+    print ("Ended at ",ltime(),"\n");
+  }
+  
+  print ("Running : cat oneHugeFile-1to2-partCoding.txt oneHugeFile-1to2-others.txt | sort -k10,10 >oneHugeFile-1to2.txt.sorted\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat oneHugeFile-1to2-partCoding.txt oneHugeFile-1to2-others.txt | sort -k10,10 >oneHugeFile-1to2.txt.sorted");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat oneHugeFile-2to1-partCoding.txt oneHugeFile-2to1-others.txt | sort -k10,10 >oneHugeFile-2to1.txt.sorted\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat oneHugeFile-2to1-partCoding.txt oneHugeFile-2to1-others.txt | sort -k10,10 >oneHugeFile-2to1.txt.sorted");
+  print ("Ended at ",ltime(),"\n");
+
+  system("mkdir -p $outdir/org1 $outdir/org2");
+  $whichCol=10;
+  $fileSuffix="_mapped.txt";
+
+  print ("Running : python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-1to2.txt.sorted $outdir/org1 $whichCol $fileSuffix\n");
+  print ("Started at ",ltime(),"\n");
+  system("python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-1to2.txt.sorted $outdir/org1 $whichCol $fileSuffix");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-2to1.txt.sorted $outdir/org2 $whichCol $fileSuffix\n");
+  print ("Started at ",ltime(),"\n");
+  system("python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-2to1.txt.sorted $outdir/org2 $whichCol $fileSuffix");
+  print ("Ended at ",ltime(),"\n");
+ 
+  print ("Removing temporary files\n");
+  system("rm -rf oneHugeFile*.txt"); 
+
+}
+
+sub liftoverfilesprocessunmappedexons {
+
+  my $indir  = $_[0];
+  my $outdir = $_[1];
+  my $flank  = $_[2];
+  my $extmapper_path = $_[3];
+
+  if (-e "oneHugeFile-2to1-partCoding.txt") {
+    system("rm -rf oneHugeFile-2to1-partCoding.txt");
+  }
+  if (-e "oneHugeFile-1to2-partCoding.txt") {
+    system("rm -rf oneHugeFile-1to2-partCoding.txt");
+  }
+  
+  foreach my $minMatch (qw{1 0.95 0.9}) {
+    $suffix="flank$flank-minMatch$minMatch-multiples-partCoding";
+    print ("Running : zcat $indir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed.gz |awk -v OFS='\\t' '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-1to2-partCoding.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed.gz |awk -v OFS='\\t' '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-1to2-partCoding.txt"); 
+    print ("Ended at ",ltime(),"\n");
+  
+    print ("Running : zcat $indir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed.gz |awk -v OFS='\\t' '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-2to1-partCoding.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed.gz |awk -v OFS='\\t' '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-2to1-partCoding.txt");
+    print ("Ended at ",ltime(),"\n");
+  }  
+ 
+  if (-e "oneHugeFile-2to1-others.txt") {
+    system("rm -rf oneHugeFile-2to1-others.txt");
+  }
+  if (-e "oneHugeFile-1to2-others.txt") {
+    system("rm -rf oneHugeFile-1to2-others.txt");
+  }
+
+  foreach my $minMatch (qw{1 0.95 0.9}) {
+    $suffix="flank$flank-minMatch$minMatch-multiples";
+    print ("Running : zcat $indir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-1to2-others.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org1_to_org2_liftOver_unmappedExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-1to2-others.txt");
+    print ("Ended at ",ltime(),"\n");
+
+    print ("Running : zcat $indir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-2to1-others.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org2_to_org1_liftOver_unmappedExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-2to1-others.txt");
+    print ("Ended at ",ltime(),"\n");
+  }
+
+  print ("Running : cat oneHugeFile-1to2-partCoding.txt oneHugeFile-1to2-others.txt | sort -k5,5 >oneHugeFile-1to2.txt.sorted\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat oneHugeFile-1to2-partCoding.txt oneHugeFile-1to2-others.txt | sort -k5,5 >oneHugeFile-1to2.txt.sorted");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat oneHugeFile-2to1-partCoding.txt oneHugeFile-2to1-others.txt | sort -k5,5 >oneHugeFile-2to1.txt.sorted\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat oneHugeFile-2to1-partCoding.txt oneHugeFile-2to1-others.txt | sort -k5,5 >oneHugeFile-2to1.txt.sorted");
+  print ("Ended at ",ltime(),"\n");
+
+  system("mkdir -p $outdir/org1 $outdir/org2");
+  $whichCol=5;
+  $fileSuffix="_unmapped.txt";
+
+  print ("Running : python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-1to2.txt.sorted $outdir/org1 $whichCol $fileSuffix\n");
+  print ("Started at ",ltime(),"\n");
+  system("python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-1to2.txt.sorted $outdir/org1 $whichCol $fileSuffix");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-2to1.txt.sorted $outdir/org2 $whichCol $fileSuffix\n");
+  print ("Started at ",ltime(),"\n");
+  system("python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-2to1.txt.sorted $outdir/org2 $whichCol $fileSuffix");
+  print ("Ended at ",ltime(),"\n");
+}
+
+sub liftoverfilesprocessmappedexons {
+
+  my $indir  = $_[0];
+  my $outdir = $_[1];
+  my $flank  = $_[2];
+  my $extmapper_path = $_[3];
+
+  if (-e "oneHugeFile-2to1-others.txt") {
+    system("rm -rf oneHugeFile-2to1-others.txt");
+  }
+  if (-e "oneHugeFile-1to2-others.txt") {
+    system("rm -rf oneHugeFile-1to2-others.txt");
+  }
+  
+  foreach my $minMatch (qw{1 0.95 0.9}) {
+    $suffix="flank$flank-minMatch$minMatch-multiples";
+    print ("Running : zcat $indir/org1_VS_org2_to_org1_nonintersectingExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-2to1-others.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org1_VS_org2_to_org1_nonintersectingExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-2to1-others.txt");
+    print ("Ended at ",ltime(),"\n");
+
+    print ("Running : zcat $indir/org2_VS_org1_to_org2_nonintersectingExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-1to2-others.txt\n");
+    print ("Started at ",ltime(),"\n");
+    system("zcat $indir/org2_VS_org1_to_org2_nonintersectingExonsList-$suffix.bed.gz |awk '{print \$1,\$2,\$3,\$6,\$4,\$5,s}' s=$suffix >> oneHugeFile-1to2-others.txt");
+    print ("Ended at ",ltime(),"\n");
+  }
+ 
+  print ("Running : cat oneHugeFile-1to2-others.txt | sort -k5,5 >oneHugeFile-1to2.txt.sorted\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat oneHugeFile-1to2-others.txt | sort -k5,5 >oneHugeFile-1to2.txt.sorted");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : cat oneHugeFile-2to1-others.txt | sort -k5,5 >oneHugeFile-2to1.txt.sorted\n");
+  print ("Started at ",ltime(),"\n");
+  system("cat oneHugeFile-2to1-others.txt | sort -k5,5 >oneHugeFile-2to1.txt.sorted");
+  print ("Ended at ",ltime(),"\n");
+ 
+  system("mkdir -p $outdir/org1 $outdir/org2");
+  $whichCol=5;
+  $fileSuffix="_nonintersecting.txt";
+  print ("Running : python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-1to2.txt.sorted $outdir/org1 $whichCol $fileSuffix\n");
+  print ("Started at ",ltime(),"\n");
+  system("python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-1to2.txt.sorted $outdir/org1 $whichCol $fileSuffix");
+  print ("Ended at ",ltime(),"\n");
+
+  print ("Running : python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-2to1.txt.sorted $outdir/org2 $whichCol $fileSuffix\n");
+  print ("Started at ",ltime(),"\n");
+  system("python $extmapper_path/scripts/splitExonsIntoIndividualFiles.py oneHugeFile-2to1.txt.sorted $outdir/org2 $whichCol $fileSuffix");
+  print ("Ended at ",ltime(),"\n");  
+
+  print ("Removing temporary files\n");
+  system("rm -rf oneHugeFile* dummy.txt");
+}
+
+sub step {
+ 
+   my $step = $_[0];
+
+   if ($step == 1 || $step eq "all" || $step eq "All" || $step eq "ALL") { 
+ 
+    print ("Running step 1:\n");
+    print ("Downloading per organism specific files and keep the original organism names for future reuse\n");
+    print ("Downloading the two reference genomes from UCSC and get rid of unknown, random and alt contigs\n");
+
+    system("mkdir -p $referenceGenomesDir");
+    downloadrefgenome($referenceGenomesDir, $ENV{'ref1'});
+    downloadrefgenome($referenceGenomesDir, $ENV{'ref2'});
+
+    system("mkdir -p $chainsDir");
+    downloadliftoverfiles($chainsDir, $ENV{'ref1'}, $ENV{'ref2'});
+    downloadliftoverfiles($chainsDir, $ENV{'ref2'}, $ENV{'ref1'});
+ 
+    system("mkdir -p $ensemblDir");
+    downloadensmblfiles($ensemblDir, $ENV{'releaseNo'}, $ENV{'org1EnsemblName'}, $ENV{'org1EnsemblMartName'}, $ENV{'org2EnsemblName'}, $ENV{'org2EnsemblMartName'}); 
+    print ("---------------------- Step 1 Finished ----------------------\n");
+  }
+  
+  if ($step == 2 || $step eq "all" || $step eq "All" || $step eq "ALL") {
+
+    print ("Running step 2:\n");
+    print ("Initialize the genomedata archives with the genomes of org1 and org2\n");
+    print ("Make sure genomedata is installed first\n");
+    print ("Installation: pip install genomedata --user\n");
+    system("mkdir -p $genomedataDir");
+    
+    genomedataarchive($genomedataDir, "org1", $ENV{'ref1'}, $referenceGenomesDir);
+    genomedataarchive($genomedataDir, "org2", $ENV{'ref2'}, $referenceGenomesDir);
+    print ("---------------------- Step 2 Finished ----------------------\n");
+  }
+ 
+  if ($step == 3 || $step eq "all" || $step eq "All" || $step eq "ALL") {
+    print ("Running step 3:\n");
+    print ("Creating pickle files\n");
+    createpicklefiles($ENV{'EXTRAMAPPER_DIR'}, $ensemblDir, $dataDirPerPair, $GTFsummaryDir, $perGenePairPickleDir);
+    print ("---------------------- Step 3 Finished ----------------------\n");
+  }
+
+  if ($step == 4 || $step eq "all" || $step eq "All" || $step eq "ALL") {
+    print ("Running step 4:\n");
+    print ("liftOver the exon lists but this time allow multiple mappings and also compute intersections with the other set of exons\n");
+    system("mkdir -p $liftOverFilesDir");
+    system("mkdir -p preprocess/bin");
+    if (!-e "./preprocess/bin/liftOver") {
+      system("ln -s \$(readlink $ENV{liftOver}) ./preprocess/bin");
+    }
+    liftoverexonmultiplemapping($GTFsummaryDir, $liftOverFilesDir, $chainsDir, $ENV{'ref1'}, $ENV{'ref2'}, $ENV{'EXTRAMAPPER_DIR'});
+    print ("---------------------- Step 4 Finished ----------------------\n");
+  }
+
+  if ($step == 5 || $step eq "all" || $step eq "All" || $step eq "ALL") {
+    print ("Running step 5:\n");
+    print ("Putting together, sorting, making them uniq and then splitting into one file per exon for all the liftover files created so far\n");
+    liftoverfilesprocess($liftOverFilesDir,  $perExonLiftoverDir, 0, $ENV{'EXTRAMAPPER_DIR'}); 
+    print ("---------------------- Step 5 Finished ----------------------\n");
+  }
+  
+  if ($step == 6 || $step eq "all" || $step eq "All" || $step eq "ALL") {
+    print ("Running step 6:\n");
+    print ("Putting together, sorting, making them uniq and then splitting into one file per exon for all the liftover files created for UNMAPPED EXONS so far\n"); 
+    liftoverfilesprocessunmappedexons($liftOverFilesDir,  $perExonLiftoverDir, 0, $ENV{'EXTRAMAPPER_DIR'});
+    print ("---------------------- Step 6 Finished ----------------------\n");
+  }
+
+  if ($step == 7 || $step eq "all" || $step eq "All" || $step eq "ALL") {
+    print ("Runing step 7:\n");
+    print ("Putting together, sorting, making them uniq and then splitting into one file per exon for all the liftover files for MAPPED EXONS that DO NOT INTERSECT WITH AN EXON so far\n");
+    liftoverfilesprocessmappedexons($liftOverFilesDir,  $perExonLiftoverDir, 0, $ENV{'EXTRAMAPPER_DIR'});
+    print ("---------------------- Step 7 Finished ----------------------\n");
+    print ("Preporcessing steps finished!\n");
+  }
+}
+
+step($step);
