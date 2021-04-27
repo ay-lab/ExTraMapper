@@ -61,56 +61,53 @@ The users should run the _run_human_monkey_preprocess_data_steps.sh_ to generate
 #### Once finished the run_human_monkey_preprocess_data_steps.sh script shoudld produce the _data_ folder with the following subfolders.<br>
 
 ```bash 
-.
+./preprocess
 |-- bin
-|   |-- liftOver
-|   `-- liftover-withMultiples
-|-- data
-|   |-- human-rhesus
-|   |   |-- GTFsummaries
-|   |   |   |-- onlyOrthologAndCodingGenes
-|   |   |   |   |-- org1-allExons-GTFparsed.txt
-|   |   |   |   |-- org1-allGenes-GTFparsed.txt
-|   |   |   |   |-- org1-allTranscripts-GTFparsed.txt
-|   |   |   |   |-- org2-allExons-GTFparsed.txt
-|   |   |   |   |-- org2-allGenes-GTFparsed.txt
-|   |   |   |   `-- org2-allTranscripts-GTFparsed.txt
-|   |   |   |-- org1-allExons-GTFparsed.txt
-|   |   |   |-- org1-allGenes-GTFparsed.txt
-|   |   |   |-- org1-allTranscripts-GTFparsed.txt
-|   |   |   |-- org2-allExons-GTFparsed.txt
-|   |   |   |-- org2-allGenes-GTFparsed.txt
-|   |   |   `-- org2-allTranscripts-GTFparsed.txt
-|   |   |-- ensemblDownloads
-|   |   |   |-- org1.gtf
-|   |   |   |-- org1.gtf.gz
-|   |   |   |-- org1_homolog_org2.txt
-|   |   |   |-- org1_homolog_org2.txt.gz
-|   |   |   |-- org2.gtf
-|   |   |   |-- org2.gtf.gz
-|   |   |   |-- org2_homolog_org1.txt
-|   |   |   `-- org2_homolog_org1.txt.gz
-|   |   |-- genePairsSummary-one2one.txt
-|   |   |-- genomedataArchives
-|   |   |   |-- org1 [25 entries exceeds filelimit, not opening dir]
-|   |   |   `-- org2 [22 entries exceeds filelimit, not opening dir]
-|   |   |-- liftoverRelatedFiles [56 entries exceeds filelimit, not opening dir]
-|   |   |-- perExonLiftoverCoords
-|   |   |   |-- org1 [619127 entries exceeds filelimit, not opening dir]
-|   |   |   `-- org2 [260616 entries exceeds filelimit, not opening dir]
-|   |   `-- perGenePairPickledInfo [16150 entries exceeds filelimit, not opening dir]
-|   |-- liftover_chains
-|   |   |-- hg38
-|   |   |   `-- liftOver
-|   |   |       `-- hg38ToRheMac10.over.chain.gz
-|   |   `-- rheMac10
-|   |       `-- liftOver
-|   |           `-- rheMac10ToHg38.over.chain.gz
-|   `-- reference_genomes
-|       |-- hg38 [27 entries exceeds filelimit, not opening dir]
-|       `-- rheMac10 [25 entries exceeds filelimit, not opening dir]
-`-- scripts
-    `-- splitExonsIntoIndividualFiles.py
+|   `-- liftOver
+`-- data
+    |-- human-rhesus
+    |   |-- GTFsummaries
+    |   |   |-- onlyOrthologAndCodingGenes
+    |   |   |   |-- org1-allExons-GTFparsed.txt
+    |   |   |   |-- org1-allGenes-GTFparsed.txt
+    |   |   |   |-- org1-allTranscripts-GTFparsed.txt
+    |   |   |   |-- org2-allExons-GTFparsed.txt
+    |   |   |   |-- org2-allGenes-GTFparsed.txt
+    |   |   |   `-- org2-allTranscripts-GTFparsed.txt
+    |   |   |-- org1-allExons-GTFparsed.txt
+    |   |   |-- org1-allGenes-GTFparsed.txt
+    |   |   |-- org1-allTranscripts-GTFparsed.txt
+    |   |   |-- org2-allExons-GTFparsed.txt
+    |   |   |-- org2-allGenes-GTFparsed.txt
+    |   |   `-- org2-allTranscripts-GTFparsed.txt
+    |   |-- ensemblDownloads
+    |   |   |-- org1.gtf
+    |   |   |-- org1.gtf.gz
+    |   |   |-- org1_homolog_org2.txt
+    |   |   |-- org1_homolog_org2.txt.gz
+    |   |   |-- org2.gtf
+    |   |   |-- org2.gtf.gz
+    |   |   |-- org2_homolog_org1.txt
+    |   |   `-- org2_homolog_org1.txt.gz
+    |   |-- genePairsSummary-one2one.txt
+    |   |-- genomedataArchives
+    |   |   |-- org1 [27 entries exceeds filelimit, not opening dir]
+    |   |   `-- org2 [23 entries exceeds filelimit, not opening dir]
+    |   |-- liftoverRelatedFiles [56 entries exceeds filelimit, not opening dir]
+    |   |-- perExonLiftoverCoords
+    |   |   |-- org1 [619127 entries exceeds filelimit, not opening dir]
+    |   |   `-- org2 [260616 entries exceeds filelimit, not opening dir]
+    |   `-- perGenePairPickledInfo [16150 entries exceeds filelimit, not opening dir]
+    |-- liftover_chains
+    |   |-- hg38
+    |   |   `-- liftOver
+    |   |       `-- hg38ToRheMac10.over.chain.gz
+    |   `-- rheMac10
+    |       `-- liftOver
+    |           `-- rheMac10ToHg38.over.chain.gz
+    `-- reference_genomes
+        |-- hg38 [27 entries exceeds filelimit, not opening dir]
+        `-- rheMac10 [24 entries exceeds filelimit, not opening dir]
 ```
 
 ##### The whole process should take some time to finish!
