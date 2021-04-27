@@ -20,6 +20,10 @@ The users should run the _extMpreprocess_ to generate the inputfiles. All the in
     Step 3: Pickle files for each homologous gene pair will be created.
     Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools and liftOver executables).
     Step 5-7: postprocessing the liftOver files.
+    
+    example: 
+    
+    ./extMpreprocess config.human-mouse.conf all
     ```
    <br>
    <br>
@@ -27,7 +31,6 @@ The users should run the _extMpreprocess_ to generate the inputfiles. All the in
     
     ```bash
     $ pip install genomedata --user
-    $ ./run_human_mouse_preprocess_data_steps.sh 1
     ```
     <br>
  
