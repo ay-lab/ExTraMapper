@@ -1,0 +1,134 @@
+#!/usr/bin/perl
+
+sub generatefiles {
+ 
+  my $htgtf = $_[0]; 
+  my $mtgtf = $_[1];
+  my $ogene = $_[2];   
+  my $etmfl = $_[3];
+  my $mping = $_[4];
+  my $outpt = $_[5];
+  my %geneid;
+ 
+  open(hgtf_in, $htgtf);
+  while (my $line = <hgtf_in>) {
+    chomp $line;
+    if ($. > 1) {
+      my $tname = (split(/\s+/,$line))[4];
+      my $tgene = (split(/\s+/,$line))[5];
+      my @exons = split(/,/,(split(/\s+/,$line))[9]);
+      $geneid{'h'}{'t'}{$tname} = $tgene;
+      foreach my $e (@exons) {
+        chomp $e;
+        if ($geneid{'h'}{'e'}{$e} eq "") {
+          $geneid{'h'}{'e'}{$e} = $tgene;
+        } else {
+          $geneid{'h'}{'e'}{$e} = "$geneid{'h'}{'e'}{$e},$tgene";
+        }
+      }
+      undef @exons;
+    }
+  }
+  close(hgtf_in);
+ 
+  open(mgtf_in, $mtgtf);
+  while (my $line = <mgtf_in>) {
+    chomp $line;
+    if ($. > 1) {
+      my $tname = (split(/\s+/,$line))[4];
+      my $tgene = (split(/\s+/,$line))[5];
+      my @exons = split(/,/,(split(/\s+/,$line))[9]);
+      $geneid{'m'}{'t'}{$tname} = $tgene;
+      foreach my $e (@exons) {
+        chomp $e;
+        if ($geneid{'m'}{'e'}{$e} eq "") {
+          $geneid{'m'}{'e'}{$e} = $tgene;
+        } else {
+          $geneid{'m'}{'e'}{$e} = "$geneid{'m'}{'e'}{$e},$tgene";
+        }
+      }
+      undef @exons;
+    }
+  }
+  close(mgtf_in);
+
+  open(out_tpair,">$outpt.transcriptLevelMappings-$mping.txt");
+  open(out_epair,">$outpt.exonLevelMappings-$mping.txt");
+  print out_tpair ("chrName1\tstartCoord1\tendCoord1\tstrand1\tchrName2\tstartCoord2\tendCoord2\tstrand2\ttranscriptID1\ttranscriptID2\ttranscriptName1\ttranscriptName2\ttranscriptType1\ttranscriptType2\toverallSimScore\tcodingSimScore\tortholog\n");
+  print out_epair ("chrName1\tstartCoord1\tendCoord1\tstrand1\tchrName2\tstartCoord2\tendCoord2\tstrand2\texonID1\texonID2\texonName1\texonName2\texonType1\texonType2\toverlapScoreFromFullLength\toverlapScoreFromPartialCodingPart\tortholog\n");
+  open(ogene_in, $ogene);
+  while (my $line = <ogene_in>) {
+    chomp $line;
+    open (extresult_trans_in, "$etmfl/$line/transcriptLevelMappings-$mping.txt");
+    while (my $r = <extresult_trans_in>) {
+      if ($. > 1) {
+        my $chrName1        = (split(/\s+/, $r))[0]; 
+        my $startCoord1     = (split(/\s+/, $r))[1];
+        my $endCoord1       = (split(/\s+/, $r))[2];
+        my $strand1         = (split(/\s+/, $r))[3];      
+        my $chrName2        = (split(/\s+/, $r))[6];
+        my $startCoord2     = (split(/\s+/, $r))[7];
+        my $endCoord2       = (split(/\s+/, $r))[8];
+        my $strand2         = (split(/\s+/, $r))[9];
+        my $transcriptID1   = (split(/\s+/, $r))[4];
+        my $transcriptType1 = (split(/\s+/, $r))[5];
+        my $transcriptID2   = (split(/\s+/, $r))[10];
+        my $transcriptType2 = (split(/\s+/, $r))[11];
+        my $overallSimScore = (split(/\s+/, $r))[18];
+        my $codingSimScore  = (split(/\s+/, $r))[19];
+        my $transcriptName1 = $geneid{'h'}{'t'}{$transcriptID1};
+        my $transcriptName2 = $geneid{'m'}{'t'}{$transcriptID2};
+        print out_tpair ("$chrName1\t$startCoord1\t$endCoord1\t$strand1\t$chrName2\t$startCoord2\t$endCoord2\t$strand2\t$transcriptID1\t$transcriptID2\t$transcriptName1\t$transcriptName2\t$transcriptType1\t$transcriptType2\t$overallSimScore\t$codingSimScore\t$line\n");
+      }
+    }
+    close(extresult_trans_in);
+    
+    open (extresult_exons_in, "$etmfl/$line/exonLevelMappings-$mping.txt");
+    while (my $r = <extresult_exons_in>) {
+      if ($. > 1) {
+        my $chrName1        = (split(/\s+/, $r))[0];
+        my $startCoord1     = (split(/\s+/, $r))[1];
+        my $endCoord1       = (split(/\s+/, $r))[2];
+        my $strand1         = (split(/\s+/, $r))[3];
+        my $chrName2        = (split(/\s+/, $r))[6];
+        my $startCoord2     = (split(/\s+/, $r))[7];
+        my $endCoord2       = (split(/\s+/, $r))[8];
+        my $strand2         = (split(/\s+/, $r))[9]; 
+        my $exonID1         = (split(/\s+/, $r))[4];
+        my $exonType1       = (split(/\s+/, $r))[5];
+        my $exonID2         = (split(/\s+/, $r))[10];
+        my $exonType2       = (split(/\s+/, $r))[11];
+        my $overlapScoreFromFullLength        = (split(/\s+/, $r))[12];
+        my $overlapScoreFromPartialCodingPart = (split(/\s+/, $r))[13];
+        my $exonName1       = $geneid{'h'}{'e'}{$exonID1};
+        my $exonName2       = $geneid{'m'}{'e'}{$exonID2};
+        print out_epair ("$chrName1\t$startCoord1\t$endCoord1\t$strand1\t$chrName2\t$startCoord2\t$endCoord2\t$strand2\t$exonID1\t$exonID2\t$exonName1\t$exonName2\t$exonType1\t$exonType2\t$overlapScoreFromFullLength\t$overlapScoreFromPartialCodingPart\t$line\n");
+      }
+    }
+    close(extresult_exons_in);
+  } 
+  close(out_tpair);
+  close(out_epair);
+  close(ogene_in);
+}
+
+if ($#ARGV == -1 || $ARGV[0] eq "help" || $#ARGV < 5) {
+  print ("Type ./extMsummarise <preprocess_folder> <extramapper_folder> <orthologous_genepair_list> <org1name> <org2name> <outputprefix>\n");
+  print ("preprocess_folder  : Path to the preprocess folder generated by the extMpreproces script\n");
+  print ("extramapper_folder : Path to the output folder generated by ExTraMapper program\n");
+  print ("orthologous_genepair_list : A list of orthologous gene-pairs\n");
+  print ("org1name : org1 name e.g. human\n");
+  print ("org2name : org2 name e.g. mouse\n");
+  print ("outputprefix : output file prefix\n\n");
+  exit;
+}
+else {
+  my ($preprocess_folder, $extmapper_result, $pair_list, $org1, $org2, $output) = @ARGV; 
+  chomp ($preprocess_folder, $extmapper_result, $pair_list, $org1, $org2, $output);
+
+  my $org1_transcript_gtf = "$preprocess_folder/data/$org1-$org2/GTFsummaries/org1-allTranscripts-GTFparsed.txt";
+  my $org2_transcript_gtf = "$preprocess_folder/data/$org1-$org2/GTFsummaries/org2-allTranscripts-GTFparsed.txt";
+  my $ogene  = $pair_list;
+  my $etmfl  = "$extmapper_result/$org1-$org2";
+  generatefiles($org1_transcript_gtf,$org2_transcript_gtf,$ogene,$etmfl,"0.8",$output);
+}
