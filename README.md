@@ -11,117 +11,36 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
  
 1. [__Human-Mouse-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Mouse-Preprocess-Data) 
 
-    Quick look:
-    
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Set the following path <br>
-   
-    ```bash
-    export EXTRAMAPPER_DIR=/path/to/Human-Mouse-Preprocess-Data/folder
-    cd $EXTRAMAPPER_DIR
-    ```
-   <br>
-   
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. <br>
-   
-    ```batch
-    $ ./run_human_mouse_preprocess_data_steps.sh 0
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand. <br>
-    
-    ```bash
-    $ pip install genomedata --user
-    $ ./run_human_mouse_preprocess_data_steps.sh 1
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library. <br>
-    
-    ```bash
-    $ ./run_human_mouse_preprocess_data_steps.sh 2
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings. <br>
-    
-    ```bash
-    $ ./run_human_mouse_preprocess_data_steps.sh 3
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files. <br>
-    
-    ```bash
-    $ ./run_human_mouse_preprocess_data_steps.sh 4
-    $ ./run_human_mouse_preprocess_data_steps.sh 5
-    $ ./run_human_mouse_preprocess_data_steps.sh 6
-    ```
-    <br>
-    
     and 
     
 2. [__Human-Rhesus_macaque-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
 
-    Quick look:
-    
-   - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Set the following path <br>
+   ## Steps to generate the input files
+The users should run the _extMpreprocess_ to generate the inputfiles within the above Preprocessed-Data folders. All the input files will be generated under _preprocess/data_ folder. All the required executables and scripts are provided here. The _extMpreprocess_ has 7 individual steps and should be run in the following manner 
+ 
+ - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) For help, type <br>
    
     ```bash
-    export EXTRAMAPPER_DIR=/path/to/Human-Monkey-Preprocess-Data/folder
-    cd $EXTRAMAPPER_DIR
-    ```
-   <br>
-   
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) Run the following step to fetch organism specific chromosomal fasta, gtf and liftOver files. <br>
-   
-    ```batch
-    $ ./run_human_monkey_preprocess_data_steps.sh 0
-    ```
-    <br>
+    ./extMpreprocess help
     
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The above step may produce an error while downloading the monkey genome from UCSC. In that case, please do the following and the script will produce the required fasta files. <br>
-    
-    ```bash
-    $ cd ./preprocess/data/reference_genomes/rheMac10/
-    $ perl getFasta.pl
-    $ cd -
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next step will create the genomedata object files. This step requires genomedata package which can be installed by running the following commnand. <br>
-    
-    ```bash
-    $ pip install genomedata --user
-    $ ./run_human_monkey_preprocess_data_steps.sh 1
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The step below will create pickle files and gene summaries. The users are requested to install the latest pickle library. <br>
-    
-    ```bash
-    $ ./run_human_monkey_preprocess_data_steps.sh 2
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The following step will run the liftOver with multiple mappings. <br>
-    
-    ```bash
-    $ ./run_human_monkey_preprocess_data_steps.sh 3
-    ```
-    <br>
-    
-    - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) The next three steps will generate the input files. <br>
-    
-    ```bash
-    $ ./run_human_monkey_preprocess_data_steps.sh 4
-    $ ./run_human_monkey_preprocess_data_steps.sh 5
-    $ ./run_human_monkey_preprocess_data_steps.sh 6
-    ```
-   <br>
-   
-Users should look into these folders and follow the instructions to create the required input files before going to the next step.   
+    This script will download and preprocess the dataset required for exon-pair and transcript pair finding by ExTraMapper.
+    Type ./extMpreprocess <config.conf> <step> to execute the script.
+    Type ./extMpreprocess example to print a example config.conf file.
 
+    This script will run seven (7) sequential steps to create the inputs for ExTraMapper program.
+    Users can provide step numbers (1-7) or all in the <step> arugemt of this script.
+    Short description of the individual scripts:
+    Step 1: Download per organism specific files e.g. reference genomes, gene annotation files.
+    Step 2: Will create genomedata archives with the genomes of org1 and org2 (Make sure to install genomedata package).
+    Step 3: Pickle files for each homologous gene pair will be created.
+    Step 4: Perform coordinate liftOver of exons with multiple mappings (This step requires bedtools and liftOver executables).
+    Step 5-7: postprocessing the liftOver files.
+    
+    example: 
+    
+    ./extMpreprocess config.human-mouse.conf all
+    ```
+   <br>
 <br>
 
 ### Step 2: Set the following path
