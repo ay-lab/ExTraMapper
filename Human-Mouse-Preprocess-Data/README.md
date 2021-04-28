@@ -91,5 +91,5 @@ The users should run the _extMpreprocess_ to generate the inputfiles. All the in
 ```
 <br>
 
-##### The whole process should take some time to finish!
+##### The whole process should take several hours to complete!
 ##### [(Check also the Human-Moneky data processing steps)](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data)
