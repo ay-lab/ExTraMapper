@@ -15,7 +15,7 @@ ExTraMapper requires a set of preprocessed files to find the conservation scores
     
 2. [__Human-Rhesus_macaque-Preprocessed-Data__](https://github.com/ay-lab/ExTraMapper/tree/master/Human-Monkey-Processed-Data) 
 
-   ## Steps to generate the input files
+### Steps to generate the input files
 The users should run the _extMpreprocess_ to generate the inputfiles within the above Preprocessed-Data folders. All the input files will be generated under _preprocess/data_ folder. All the required executables and scripts are provided here. The _extMpreprocess_ has 7 individual steps and should be run in the following manner 
  
  - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) For help, type <br>
@@ -151,6 +151,9 @@ $ tree ./output
 ```
 
 Note: The __exonLevelMappings-1.0.txt__ & __transcriptLevelMappings-1.0.txt__ file contains the mapped exon and transcript pairs from __ENSG00000141510-ENSMUSG00000059552__ orthologous gene-pair. 
+
+<br>
+### Summarise the ExTraMapper results ###
 
 <br>
 
