@@ -691,7 +691,7 @@ sub step {
   if ($step == 3 || $step eq "all" || $step eq "All" || $step eq "ALL") {
     print ("Running step 3:\n");
     print ("Creating pickle files\n");
-    createpicklefiles($ENV{'EXTRAMAPPER_DIR'}, $ensemblDir, $dataDirPerPair, $GTFsummaryDir, $perGenePairPickleDir);
+    parseAndPicklePerPair($ENV{'EXTRAMAPPER_DIR'}, $ensemblDir, $dataDirPerPair, $GTFsummaryDir, $perGenePairPickleDir);
     print ("---------------------- Step 3 Finished ----------------------\n");
   }
 
